@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Next.js
+.next/
+out/
+
+# Build
+dist/
+build/
+
+# Coverage
+coverage/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Hardhat
+cache/
+artifacts/
+
+# Local databases
+*.db
