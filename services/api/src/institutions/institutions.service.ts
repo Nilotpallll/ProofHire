@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -58,6 +58,14 @@ export class InstitutionsService {
     return this.demoInstitutions;
   }
 
+  async getInstitutionById(id: string) {
+    const inst = this.demoInstitutions.find((i) => i.id === id);
+    if (!inst) {
+      throw new NotFoundException(`Institution with ID '${id}' not found.`);
+    }
+    return inst;
+  }
+
   async getPendingInstitutions() {
     return this.demoInstitutions.filter((i) => i.status === 'PENDING');
   }
@@ -66,6 +74,7 @@ export class InstitutionsService {
     const inst = this.demoInstitutions.find((i) => i.id === id);
     if (inst) {
       inst.status = 'APPROVED';
+      (inst as any).verifiedAt = new Date().toISOString();
       return inst;
     }
     return { id, status: 'APPROVED' };
@@ -78,5 +87,14 @@ export class InstitutionsService {
       return inst;
     }
     return { id, status: 'REJECTED' };
+  }
+
+  async suspendInstitution(id: string) {
+    const inst = this.demoInstitutions.find((i) => i.id === id);
+    if (inst) {
+      inst.status = 'SUSPENDED';
+      return inst;
+    }
+    return { id, status: 'SUSPENDED' };
   }
 }

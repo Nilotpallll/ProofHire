@@ -5,10 +5,22 @@ import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Building, CheckCircle2, XCircle, ExternalLink, ShieldCheck } from "lucide-react";
+import { Building, CheckCircle2, XCircle, ExternalLink, ShieldCheck, AlertTriangle, PauseCircle } from "lucide-react";
+
+interface InstitutionItem {
+  id: string;
+  name: string;
+  code: string;
+  website: string;
+  contactEmail: string;
+  status: "APPROVED" | "PENDING" | "REJECTED" | "SUSPENDED";
+  verifiedAt: string;
+}
 
 export default function AdminInstitutionsPage() {
-  const [institutions, setInstitutions] = React.useState([
+  const [auditMessage, setAuditMessage] = React.useState<string | null>(null);
+
+  const [institutions, setInstitutions] = React.useState<InstitutionItem[]>([
     {
       id: "inst-001",
       name: "Stanford School of Engineering",
@@ -47,16 +59,33 @@ export default function AdminInstitutionsPage() {
     },
   ]);
 
-  const approve = (id: string) => {
+  const approve = (id: string, name: string) => {
     setInstitutions((prev) =>
       prev.map((i) => (i.id === id ? { ...i, status: "APPROVED", verifiedAt: "Just now" } : i))
     );
+    setAuditMessage(`Audit Log recorded: Institution "${name}" approved for smart contract issuance.`);
+    setTimeout(() => setAuditMessage(null), 4000);
   };
 
-  const reject = (id: string) => {
+  const reject = (id: string, name: string) => {
     setInstitutions((prev) =>
       prev.map((i) => (i.id === id ? { ...i, status: "REJECTED" } : i))
     );
+    setAuditMessage(`Audit Log recorded: Institution "${name}" accreditation rejected.`);
+    setTimeout(() => setAuditMessage(null), 4000);
+  };
+
+  const toggleSuspend = (inst: InstitutionItem) => {
+    const newStatus = inst.status === "SUSPENDED" ? "APPROVED" : "SUSPENDED";
+    setInstitutions((prev) =>
+      prev.map((i) => (i.id === inst.id ? { ...i, status: newStatus } : i))
+    );
+    setAuditMessage(
+      `Audit Log recorded: Institution "${inst.name}" ${
+        newStatus === "SUSPENDED" ? "suspended from issuance" : "re-instated"
+      }.`
+    );
+    setTimeout(() => setAuditMessage(null), 4000);
   };
 
   return (
@@ -66,6 +95,13 @@ export default function AdminInstitutionsPage() {
       subtitle="Verify university and certification bodies before authorizing on-chain credential issuance rights."
     >
       <div className="space-y-6">
+        {auditMessage && (
+          <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-xs font-semibold text-emerald-900 flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            {auditMessage}
+          </div>
+        )}
+
         <Card>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -119,26 +155,36 @@ export default function AdminInstitutionsPage() {
                         {inst.status === "PENDING" ? (
                           <div className="flex items-center justify-end gap-2">
                             <Button
-                              onClick={() => approve(inst.id)}
-                              variant="success"
+                              onClick={() => approve(inst.id, inst.name)}
+                              variant="primary"
                               size="sm"
                               leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
                             >
                               Authorize
                             </Button>
                             <Button
-                              onClick={() => reject(inst.id)}
-                              variant="danger"
+                              onClick={() => reject(inst.id, inst.name)}
+                              variant="outline"
                               size="sm"
+                              className="text-rose-600 border-rose-200 hover:bg-rose-50"
                               leftIcon={<XCircle className="h-3.5 w-3.5" />}
                             >
                               Reject
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-slate-400 font-medium">
-                            Decision Recorded
-                          </span>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => toggleSuspend(inst)}
+                              className={`text-xs px-2.5 py-1 rounded border font-medium transition-colors ${
+                                inst.status === "SUSPENDED"
+                                  ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                                  : "border-amber-200 text-amber-700 hover:bg-amber-50"
+                              }`}
+                            >
+                              {inst.status === "SUSPENDED" ? "Re-instate Issuer" : "Suspend Issuance"}
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>

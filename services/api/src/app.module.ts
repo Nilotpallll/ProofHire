@@ -7,6 +7,7 @@ import { ApplicationsModule } from './applications/applications.module';
 import { InstitutionsModule } from './institutions/institutions.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { AiModule } from './ai/ai.module';
+import { AdminModule } from './admin/admin.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -19,6 +20,7 @@ import { HealthController } from './health/health.controller';
     ApplicationsModule,
     InstitutionsModule,
     AiModule,
+    AdminModule,
   ],
   controllers: [HealthController],
 })

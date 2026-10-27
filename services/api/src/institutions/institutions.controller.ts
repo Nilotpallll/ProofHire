@@ -4,7 +4,7 @@ import { InstitutionsService } from './institutions.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@proofhire/types';
 
 @ApiTags('Institutions')
 @Controller('institutions')
@@ -26,6 +26,12 @@ export class InstitutionsController {
     return this.institutionsService.getPendingInstitutions();
   }
 
+  @Get(':id')
+  @ApiOperation({ summary: 'Get details of an accredited institution' })
+  getInstitutionById(@Param('id') id: string) {
+    return this.institutionsService.getInstitutionById(id);
+  }
+
   @Patch(':id/approve')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -42,5 +48,14 @@ export class InstitutionsController {
   @ApiOperation({ summary: 'Reject an institution application (Admins only)' })
   rejectInstitution(@Param('id') id: string) {
     return this.institutionsService.rejectInstitution(id);
+  }
+
+  @Patch(':id/suspend')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Suspend an institution issuance privileges (Admins only)' })
+  suspendInstitution(@Param('id') id: string) {
+    return this.institutionsService.suspendInstitution(id);
   }
 }

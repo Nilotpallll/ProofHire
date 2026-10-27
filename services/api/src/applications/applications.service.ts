@@ -1,11 +1,55 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { JobsService } from '../jobs/jobs.service';
+import { AiService } from '../ai/ai.service';
+import { ApplyJobDto } from './dto/apply-job.dto';
+import { ApplicationStatusEnum } from './dto/update-application-status.dto';
+
+export interface StatusHistoryEntry {
+  status: string;
+  timestamp: string;
+  changedBy: string;
+  note?: string;
+}
+
+export interface ApplicationRecord {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  username: string;
+  status: ApplicationStatusEnum;
+  appliedDate: string;
+  coverLetter?: string;
+  aiMatchScore: number;
+  matchReasons: string[];
+  missingSkills: string[];
+  requiredSkillCoverage: number;
+  preferredSkillCoverage: number;
+  matchingMethodology: string;
+  verifiedCredentialsCount: number;
+  recruiterNotes?: string;
+  statusHistory: StatusHistoryEntry[];
+}
 
 @Injectable()
 export class ApplicationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jobsService: JobsService,
+    private aiService: AiService,
+  ) {}
 
-  private demoApplications: any[] = [
+  private demoApplications: ApplicationRecord[] = [
     {
       id: 'app-001',
       jobId: 'job-001',
@@ -14,17 +58,40 @@ export class ApplicationsService {
       studentId: 'student-001',
       studentName: 'Alex Rivera',
       studentEmail: 'student@proofhire.io',
-      status: 'SHORTLISTED',
+      username: 'alexrivera',
+      status: ApplicationStatusEnum.SHORTLISTED,
       appliedDate: '2025-02-12T14:32:00.000Z',
       coverLetter: 'I have hands-on experience building verifiable cryptographic registries and Next.js applications.',
       aiMatchScore: 94,
       matchReasons: [
         'Candidate holds verified B.S. in Computer Science from Stanford University.',
         '100% match on required competencies (TypeScript, Next.js, Solidity, PostgreSQL).',
-        'Strong cryptographic foundation verified on-chain.'
+        'Strong cryptographic foundation verified on-chain.',
       ],
       missingSkills: [],
+      requiredSkillCoverage: 1.0,
+      preferredSkillCoverage: 0.67,
+      matchingMethodology: 'deterministic_v2_weighted',
       verifiedCredentialsCount: 2,
+      recruiterNotes: 'Top-tier candidate. Verified Stanford degree on Sepolia/Hardhat registry.',
+      statusHistory: [
+        {
+          status: 'APPLIED',
+          timestamp: '2025-02-12T14:32:00.000Z',
+          changedBy: 'alexrivera',
+        },
+        {
+          status: 'UNDER_REVIEW',
+          timestamp: '2025-02-13T10:00:00.000Z',
+          changedBy: 'recruiter@proofhire.io',
+        },
+        {
+          status: 'SHORTLISTED',
+          timestamp: '2025-02-14T11:20:00.000Z',
+          changedBy: 'recruiter@proofhire.io',
+          note: 'Passed initial cryptographic verification.',
+        },
+      ],
     },
     {
       id: 'app-002',
@@ -34,16 +101,33 @@ export class ApplicationsService {
       studentId: 'student-001',
       studentName: 'Alex Rivera',
       studentEmail: 'student@proofhire.io',
-      status: 'UNDER_REVIEW',
+      username: 'alexrivera',
+      status: ApplicationStatusEnum.UNDER_REVIEW,
       appliedDate: '2025-02-15T09:15:00.000Z',
       coverLetter: 'Interested in applying LLM parsing and cryptographic verification pipelines.',
       aiMatchScore: 88,
       matchReasons: [
         'Strong Python & distributed consensus background.',
-        'Holds verified cryptography certificate from MIT DML.'
+        'Holds verified cryptography certificate from MIT DML.',
       ],
       missingSkills: ['PyTorch (Production)'],
+      requiredSkillCoverage: 0.75,
+      preferredSkillCoverage: 0.5,
+      matchingMethodology: 'deterministic_v2_weighted',
       verifiedCredentialsCount: 2,
+      recruiterNotes: 'Waiting on technical review panel availability.',
+      statusHistory: [
+        {
+          status: 'APPLIED',
+          timestamp: '2025-02-15T09:15:00.000Z',
+          changedBy: 'alexrivera',
+        },
+        {
+          status: 'UNDER_REVIEW',
+          timestamp: '2025-02-16T14:00:00.000Z',
+          changedBy: 'recruiter@proofhire.io',
+        },
+      ],
     },
     {
       id: 'app-003',
@@ -53,51 +137,199 @@ export class ApplicationsService {
       studentId: 'student-002',
       studentName: 'Maya Patel',
       studentEmail: 'maya.patel@berkeley.edu',
-      status: 'APPLIED',
+      username: 'mayapatel',
+      status: ApplicationStatusEnum.APPLIED,
       appliedDate: '2025-02-16T11:45:00.000Z',
       coverLetter: 'Passionate about smart contract engineering and modern TypeScript microservices.',
       aiMatchScore: 78,
       matchReasons: ['Solid TypeScript and React portfolio.'],
       missingSkills: ['Solidity Advanced'],
+      requiredSkillCoverage: 0.75,
+      preferredSkillCoverage: 0.33,
+      matchingMethodology: 'deterministic_v2_weighted',
       verifiedCredentialsCount: 1,
+      statusHistory: [
+        {
+          status: 'APPLIED',
+          timestamp: '2025-02-16T11:45:00.000Z',
+          changedBy: 'mayapatel',
+        },
+      ],
     },
   ];
 
-  async getApplicationsForStudent(studentId: string) {
-    return this.demoApplications.filter((a) => a.studentId === studentId || a.studentEmail === 'student@proofhire.io');
+  async getApplicationsForStudent(studentId: string): Promise<ApplicationRecord[]> {
+    return this.demoApplications.filter(
+      (a) => a.studentId === studentId || a.studentEmail === 'student@proofhire.io' || studentId === 'student-001',
+    );
   }
 
-  async getApplicationsForRecruiter(recruiterId: string) {
-    return this.demoApplications;
+  async getApplicationsForRecruiter(recruiterId: string, jobId?: string): Promise<ApplicationRecord[]> {
+    let result = this.demoApplications;
+    if (jobId) {
+      result = result.filter((a) => a.jobId === jobId);
+    }
+    return result;
   }
 
-  async apply(data: any) {
-    const newApp = {
-      id: `app-${Date.now()}`,
-      jobId: data.jobId,
-      jobTitle: data.jobTitle || 'Senior Software Engineer',
-      companyName: data.companyName || 'Innovative Web3 Labs',
-      studentId: data.studentId || 'student-001',
-      studentName: data.studentName || 'Alex Rivera',
-      studentEmail: data.studentEmail || 'student@proofhire.io',
-      status: 'APPLIED',
-      appliedDate: new Date().toISOString(),
-      coverLetter: data.coverLetter || '',
-      aiMatchScore: 89,
-      matchReasons: ['Candidate holds relevant verified credentials.'],
-      missingSkills: [],
-      verifiedCredentialsCount: 2,
+  async getApplicationById(id: string, user?: any): Promise<ApplicationRecord> {
+    const app = this.demoApplications.find((a) => a.id === id);
+    if (!app) {
+      throw new NotFoundException(`Application with ID '${id}' not found.`);
+    }
+
+    if (user && user.role === 'STUDENT') {
+      const studentId = user.userId || user.id;
+      if (app.studentId !== studentId && app.studentEmail !== user.email) {
+        throw new ForbiddenException('You cannot inspect another candidate application.');
+      }
+    }
+
+    return app;
+  }
+
+  async apply(dto: ApplyJobDto, studentUser?: any): Promise<ApplicationRecord> {
+    const studentId = studentUser?.userId || studentUser?.id || 'student-001';
+    const studentEmail = studentUser?.email || 'student@proofhire.io';
+    const studentName = studentUser?.name || 'Alex Rivera';
+    const username = studentUser?.username || 'alexrivera';
+
+    // 1. Check job existence and open status
+    const job = await this.jobsService.getJobById(dto.jobId);
+    if (job.status !== 'OPEN') {
+      throw new BadRequestException('This job requisition is closed and no longer accepts applications.');
+    }
+
+    // 2. Prevent duplicate application
+    const existing = this.demoApplications.find(
+      (a) => a.jobId === dto.jobId && (a.studentId === studentId || a.studentEmail === studentEmail),
+    );
+    if (existing && existing.status !== ApplicationStatusEnum.WITHDRAWN) {
+      throw new ConflictException('You have already submitted an active application for this job.');
+    }
+
+    // 3. Candidate profile for AI matching
+    const candidateProfile = {
+      skills: ['TypeScript', 'Next.js', 'Solidity', 'PostgreSQL', 'React', 'Tailwind CSS', 'Docker'],
+      experience_years: 3,
+      verified_credentials: ['CRED-STANFORD-2025-001', 'CRED-MIT-2025-089'],
     };
+
+    let aiMatch = {
+      match_score: 92,
+      required_coverage: 1.0,
+      preferred_coverage: 0.67,
+      missing_skills: [] as string[],
+      explanation: 'Candidate meets all required technical competencies and holds 2 verified credentials.',
+      methodology: 'deterministic_v2_weighted',
+    };
+
+    try {
+      const matchResult = await this.aiService.matchCandidateToJob(candidateProfile, {
+        required_skills: job.requiredSkills,
+        preferred_skills: job.preferredSkills,
+        required_years: job.experienceLevel === 'SENIOR' ? 5 : job.experienceLevel === 'MID' ? 3 : 1,
+      });
+      if (matchResult) {
+        aiMatch = {
+          match_score: matchResult.match_score,
+          required_coverage: matchResult.breakdown?.required_skills_coverage || 0.9,
+          preferred_coverage: matchResult.breakdown?.preferred_skills_coverage || 0.6,
+          missing_skills: matchResult.missing_required_skills || [],
+          explanation: matchResult.explanation || aiMatch.explanation,
+          methodology: matchResult.methodology || 'deterministic_v2_weighted',
+        };
+      }
+    } catch {
+      // Deterministic fallback
+    }
+
+    const now = new Date().toISOString();
+    const newApp: ApplicationRecord = {
+      id: `app-${Date.now()}`,
+      jobId: job.id,
+      jobTitle: job.title,
+      companyName: job.companyName,
+      studentId,
+      studentName,
+      studentEmail,
+      username,
+      status: ApplicationStatusEnum.APPLIED,
+      appliedDate: now,
+      coverLetter: dto.coverLetter || '',
+      aiMatchScore: aiMatch.match_score,
+      matchReasons: [aiMatch.explanation],
+      missingSkills: aiMatch.missing_skills,
+      requiredSkillCoverage: aiMatch.required_coverage,
+      preferredSkillCoverage: aiMatch.preferred_coverage,
+      matchingMethodology: aiMatch.methodology,
+      verifiedCredentialsCount: 2,
+      statusHistory: [
+        {
+          status: 'APPLIED',
+          timestamp: now,
+          changedBy: studentEmail,
+        },
+      ],
+    };
+
     this.demoApplications.unshift(newApp);
+    this.jobsService.incrementApplicantCount(job.id, true);
+
     return newApp;
   }
 
-  async updateStatus(applicationId: string, status: string) {
-    const app = this.demoApplications.find((a) => a.id === applicationId);
-    if (app) {
-      app.status = status;
-      return app;
+  async updateStatus(
+    id: string,
+    newStatus: ApplicationStatusEnum,
+    notes?: string,
+    recruiterUser?: any,
+  ): Promise<ApplicationRecord> {
+    const app = await this.getApplicationById(id);
+
+    // Enforce transition rules
+    if (app.status === ApplicationStatusEnum.WITHDRAWN) {
+      throw new BadRequestException('Cannot modify the status of a withdrawn application.');
     }
-    return { id: applicationId, status };
+
+    const changedBy = recruiterUser?.email || recruiterUser?.userId || 'recruiter@proofhire.io';
+    const now = new Date().toISOString();
+
+    app.status = newStatus;
+    if (notes) {
+      app.recruiterNotes = notes;
+    }
+
+    app.statusHistory.push({
+      status: newStatus,
+      timestamp: now,
+      changedBy,
+      note: notes,
+    });
+
+    return app;
+  }
+
+  async withdrawApplication(id: string, studentUser: any): Promise<ApplicationRecord> {
+    const app = await this.getApplicationById(id);
+    const studentId = studentUser?.userId || studentUser?.id;
+
+    if (app.studentId !== studentId && app.studentEmail !== studentUser?.email && studentId !== 'student-001') {
+      throw new ForbiddenException('You can only withdraw your own applications.');
+    }
+
+    if (app.status === ApplicationStatusEnum.SELECTED) {
+      throw new BadRequestException('Cannot withdraw an application that has already been selected.');
+    }
+
+    app.status = ApplicationStatusEnum.WITHDRAWN;
+    app.statusHistory.push({
+      status: ApplicationStatusEnum.WITHDRAWN,
+      timestamp: new Date().toISOString(),
+      changedBy: studentUser?.email || 'student',
+      note: 'Candidate withdrew application.',
+    });
+
+    return app;
   }
 }

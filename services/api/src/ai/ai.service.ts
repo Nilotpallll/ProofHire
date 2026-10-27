@@ -58,10 +58,8 @@ export class AiService {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          candidateSkills,
-          requiredSkills,
-          preferredSkills: ['AWS', 'Docker'],
-          verifiedSkills,
+          candidate_profile: { skills: candidateSkills, verified_credentials: verifiedSkills },
+          job_requirements: { required_skills: requiredSkills, preferred_skills: ['AWS', 'Docker'] },
         }),
       });
 
@@ -84,18 +82,30 @@ export class AiService {
     const total = Math.min(100, Math.round(reqCoverage * 80.0 + bonus + 10.0));
 
     return {
+      match_score: total,
       overallMatchScore: total,
-      requiredSkillsCoverage: reqCoverage,
-      preferredSkillsCoverage: 0.8,
-      matchedRequiredSkills: matchedReq,
-      missingRequiredSkills: missingReq,
-      matchedPreferredSkills: ['Docker'],
-      missingPreferredSkills: ['AWS'],
-      verifiedSkillsMatched: verifiedMatched,
-      verificationBonusPercentage: bonus,
+      breakdown: {
+        required_skills_coverage: reqCoverage,
+        preferred_skills_coverage: 0.8,
+        verified_credential_boost: bonus,
+      },
+      matched_required_skills: matchedReq,
+      missing_required_skills: missingReq,
+      matched_preferred_skills: ['Docker'],
       explanation: `Candidate covers ${matchedReq.length} of ${requiredSkills.length} required competencies with a +${bonus.toFixed(1)}% verified credential bonus.`,
-      matchingMethodology: 'ProofHire Explainable Match Engine v2.1 with Cryptographic Boost',
+      methodology: 'deterministic_v2_weighted',
     };
+  }
+
+  /**
+   * Adapter matching profile to job requirements dictionary.
+   */
+  async matchCandidateToJob(candidateProfile: any, jobDetails: any) {
+    const candidateSkills = candidateProfile?.skills || [];
+    const requiredSkills = jobDetails?.required_skills || jobDetails?.requiredSkills || [];
+    const verifiedSkills = candidateProfile?.verified_credentials || [];
+
+    return this.matchJob(candidateSkills, requiredSkills, verifiedSkills);
   }
 
   /**
