@@ -247,4 +247,72 @@ describe("CredentialRegistry Smart Contract Suite", function () {
         .withArgs("unknown-id");
     });
   });
+
+  describe("5. Edge Cases & Security Invariants", function () {
+    it("Should reject authorizing an issuer with zero address", async function () {
+      await expect(
+        registry.authorizeIssuer(ethers.ZeroAddress, "Bogus")
+      ).to.be.revertedWithCustomError(registry, "InvalidZeroAddress");
+    });
+
+    it("Should reject non-owner trying to suspend or revoke an issuer", async function () {
+      await expect(
+        registry.connect(attacker).suspendIssuer(stanfordIssuer.address)
+      ).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+
+      await expect(
+        registry.connect(attacker).revokeIssuer(stanfordIssuer.address)
+      ).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+    });
+
+    it("Should reject suspending or revoking an unauthorized issuer", async function () {
+      await expect(
+        registry.suspendIssuer(attacker.address)
+      ).to.be.revertedWithCustomError(registry, "CallerNotAuthorizedIssuer");
+
+      await expect(
+        registry.revokeIssuer(attacker.address)
+      ).to.be.revertedWithCustomError(registry, "CallerNotAuthorizedIssuer");
+    });
+
+    it("Should invalidate credentials when issuer is subsequently suspended or revoked", async function () {
+      await registry
+        .connect(stanfordIssuer)
+        .issueCredential(testCredentialId, testSubjectRef, testDocumentDigest, testIpfsUri);
+
+      // Verify authentic initially
+      let result = await registry.verifyCredential(testCredentialId, testDocumentDigest);
+      expect(result.isValid).to.be.true;
+
+      // Suspend Stanford
+      await registry.suspendIssuer(stanfordIssuer.address);
+
+      // Credential verification should now report invalid due to issuer suspension
+      result = await registry.verifyCredential(testCredentialId, testDocumentDigest);
+      expect(result.isValid).to.be.false;
+      expect(result.exists).to.be.true;
+
+      // Revoke Stanford completely
+      await registry.revokeIssuer(stanfordIssuer.address);
+      result = await registry.verifyCredential(testCredentialId, testDocumentDigest);
+      expect(result.isValid).to.be.false;
+    });
+
+    it("Should verify successfully without document digest when expectedDigest is bytes32(0)", async function () {
+      await registry
+        .connect(stanfordIssuer)
+        .issueCredential(testCredentialId, testSubjectRef, testDocumentDigest, testIpfsUri);
+
+      const result = await registry.verifyCredential(testCredentialId, ethers.ZeroHash);
+      expect(result.isValid).to.be.true;
+      expect(result.digestMatches).to.be.true;
+    });
+
+    it("Should revert getCredential for non-existent credential identifier", async function () {
+      await expect(
+        registry.getCredential("bogus-credential-id")
+      ).to.be.revertedWithCustomError(registry, "CredentialNotFound")
+        .withArgs("bogus-credential-id");
+    });
+  });
 });

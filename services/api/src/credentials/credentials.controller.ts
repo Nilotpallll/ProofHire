@@ -18,8 +18,9 @@ export class CredentialsController {
   async verifyPublic(
     @Param('id') id: string,
     @Query('digest') digest?: string,
+    @Query('expectedDigest') expectedDigest?: string,
   ) {
-    return this.credentialsService.verifyPublic(id, digest);
+    return this.credentialsService.verifyPublic(id, digest || expectedDigest);
   }
 
   @Get()

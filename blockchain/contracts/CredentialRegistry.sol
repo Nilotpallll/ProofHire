@@ -234,8 +234,8 @@ contract CredentialRegistry is Ownable {
         bool digestOk = (expectedDigest == bytes32(0)) || (expectedDigest == record.documentDigest);
         digestMatches = digestOk;
 
-        // Valid only if issuer was authorized at issuance, credential is not revoked, and digest matches
-        bool issuerOk = issuers[record.issuer].isAuthorized;
+        // Valid only if issuer is currently authorized (not revoked or suspended), credential is not revoked, and digest matches
+        bool issuerOk = issuers[record.issuer].isAuthorized && !issuers[record.issuer].isSuspended;
         isValid = exists && !isRevoked && digestOk && issuerOk;
 
         return (isValid, exists, isRevoked, digestMatches, issuer, issuedAt);
