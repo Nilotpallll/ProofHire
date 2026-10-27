@@ -14,7 +14,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const navLinks = [
-    { label: "Verify Credential", href: "/verify/demo-credential" },
+    { label: "Verify Credential", href: "/verify/CRED-STANFORD-2025-001" },
     { label: "How It Works", href: "/how-it-works" },
     { label: "About", href: "/about" },
   ];

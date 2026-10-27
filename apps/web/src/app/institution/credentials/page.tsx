@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { Tabs } from "@/components/ui/Tabs";
 import { Modal } from "@/components/ui/Modal";
 import { CredentialStatusIndicator } from "@/components/ui/CredentialStatusIndicator";
+import { api } from "@/lib/api";
 import {
   Award,
   Search,
@@ -79,15 +80,7 @@ export default function InstitutionCredentialsListPage() {
     setRevoking(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
-      await fetch(`${apiUrl}/credentials/${encodeURIComponent(selectedCred.credentialId)}/revoke`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("proofhire_token")}`,
-        },
-        body: JSON.stringify({ reason: revokeReason }),
-      });
+      await api.credentials.revoke(selectedCred.credentialId, revokeReason);
     } catch {
       // local fallback
     }

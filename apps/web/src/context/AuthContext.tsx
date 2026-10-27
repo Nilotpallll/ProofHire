@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
 
 export type Role = "STUDENT" | "RECRUITER" | "INSTITUTION" | "ADMIN";
 
@@ -96,26 +97,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Try backend API first
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
-      const response = await fetch(`${apiUrl}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        setToken(data.accessToken);
-        localStorage.setItem("proofhire_user", JSON.stringify(data.user));
-        localStorage.setItem("proofhire_token", data.accessToken);
-        setIsLoading(false);
-        redirectBasedOnRole(data.user.role);
-        return { success: true };
-      }
+      const data = await api.auth.login(email, password);
+      setUser(data.user as User);
+      setToken(data.accessToken);
+      localStorage.setItem("proofhire_user", JSON.stringify(data.user));
+      localStorage.setItem("proofhire_token", data.accessToken);
+      setIsLoading(false);
+      redirectBasedOnRole(data.user.role as Role);
+      return { success: true };
     } catch {
-      // Backend offline: check seed demo accounts
+      // Backend offline or user not in DB: check seed demo accounts
     }
 
     // Fallback seed matcher
@@ -134,11 +125,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     setIsLoading(false);
-    return { success: false, error: "Invalid email or password. Use seed accounts to test." };
+    return { success: false, error: "Invalid email or password. Use demo accounts or register a new user." };
   };
 
   const register = async (data: any) => {
     setIsLoading(true);
+    try {
+      const res = await api.auth.register({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+        organizationOrUniversity: data.organizationOrUniversity,
+      });
+
+      if (res && res.user) {
+        setUser(res.user);
+        setToken(res.accessToken || `token_${res.user.id}`);
+        localStorage.setItem("proofhire_user", JSON.stringify(res.user));
+        localStorage.setItem("proofhire_token", res.accessToken || `token_${res.user.id}`);
+        setIsLoading(false);
+        redirectBasedOnRole(res.user.role);
+        return { success: true };
+      }
+    } catch {
+      // Offline fallback
+    }
+
     const newUser: User = {
       id: `user-${Date.now()}`,
       name: data.name,

@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { api } from "@/lib/api";
 import {
   ArrowLeft,
   ShieldCheck,
@@ -116,26 +117,17 @@ export default function InstitutionIssueCredentialPage() {
     const tx = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("")}`;
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
-      const res = await fetch(`${apiUrl}/credentials/issue`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("proofhire_token")}`,
-        },
-        body: JSON.stringify({
-          title,
-          type,
-          recipientName,
-          recipientEmail,
-          gradeOrScore: grade,
-          skills,
-          documentDigest: computedDigest,
-        }),
+      const data = await api.credentials.issue({
+        credentialId: credId,
+        title,
+        type: type as any,
+        recipientEmail,
+        gradeOrScore: grade,
+        skills,
+        documentDigest: computedDigest,
       });
 
-      if (res.ok) {
-        const data = await res.json();
+      if (data) {
         setSuccessResult({
           credentialId: data.credential?.credentialId || credId,
           txHash: data.credential?.txHash || tx,

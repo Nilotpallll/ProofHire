@@ -5,6 +5,7 @@ import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { api } from "@/lib/api";
 import {
   Sparkles,
   CheckCircle2,
@@ -100,71 +101,38 @@ EXPERIENCE & PROJECTS:
     setAnalyzing(true);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const aiUrl = process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8000";
-      const parseRes = await fetch(`${aiUrl}/api/v1/resumes/parse`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (parseRes.ok) {
-        const parsedData = await parseRes.json();
-        if (parsedData.rawTextExcerpt) {
-          setResumeText(parsedData.rawTextExcerpt);
-        }
-
-        // Run analysis on parsed text
-        const analyzeRes = await fetch(`${aiUrl}/api/v1/resumes/analyze`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            rawText: parsedData.rawTextExcerpt || resumeText,
-            verifiedSkills: ["TypeScript", "Solidity", "PostgreSQL"],
-          }),
-        });
-
-        if (analyzeRes.ok) {
-          const result = await analyzeRes.json();
-          setAnalysisResult(result);
-          setAnalyzing(false);
-          return;
-        }
+      const parsedData = await api.ai.parse(file);
+      if (parsedData.rawTextExcerpt) {
+        setResumeText(parsedData.rawTextExcerpt);
       }
+
+      const result = await api.ai.analyze(
+        parsedData.rawTextExcerpt || resumeText,
+        "",
+        ["TypeScript", "Solidity", "PostgreSQL"]
+      );
+      setAnalysisResult(result);
     } catch {
       // Fallback
+    } finally {
+      setAnalyzing(false);
     }
-
-    setAnalyzing(false);
   };
 
   const handleRunAnalysis = async () => {
     setAnalyzing(true);
     try {
-      const aiUrl = process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8000";
-      const res = await fetch(`${aiUrl}/api/v1/resumes/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          rawText: resumeText,
-          verifiedSkills: ["TypeScript", "Solidity", "PostgreSQL"],
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setAnalysisResult(data);
-        setAnalyzing(false);
-        return;
-      }
+      const data = await api.ai.analyze(
+        resumeText,
+        "",
+        ["TypeScript", "Solidity", "PostgreSQL"]
+      );
+      setAnalysisResult(data);
     } catch {
       // local fallback
-    }
-
-    setTimeout(() => {
+    } finally {
       setAnalyzing(false);
-    }, 500);
+    }
   };
 
   return (
