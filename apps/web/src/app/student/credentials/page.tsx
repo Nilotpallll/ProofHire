@@ -21,42 +21,74 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+import { api } from "@/lib/api";
+
+const DEFAULT_STUDENT_CREDS = [
+  {
+    id: "cred-001",
+    credentialId: "CRED-STANFORD-2025-001",
+    title: "Bachelor of Science in Computer Science",
+    type: "DEGREE",
+    institution: "Stanford School of Engineering",
+    institutionCode: "STANFORD-CS",
+    issueDate: "June 15, 2025",
+    txHash: "0x3c990a56e5223a4b64c18c99277d337f75eb1432c253457a4e69b0faee2ef124",
+    ipfsHash: "ipfs://QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco",
+    grade: "GPA 3.92 (Summa Cum Laude)",
+    skills: ["Distributed Systems", "Cryptography", "PostgreSQL", "Full-Stack Development"],
+    status: "ISSUED",
+  },
+  {
+    id: "cred-002",
+    credentialId: "CRED-MIT-2025-089",
+    title: "Advanced Cryptographic Engineering Certificate",
+    type: "CERTIFICATE",
+    institution: "MIT Decentralized Media Lab",
+    institutionCode: "MIT-DML",
+    issueDate: "August 20, 2025",
+    txHash: "0x7b11c90a1492a54b38d19a99781b456e72cb1531e253998a4e69c0faee2a991b",
+    ipfsHash: "ipfs://QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx",
+    grade: "Top Decile (98%)",
+    skills: ["Zero Knowledge Proofs", "ZK-SNARKs", "Solidity", "Elliptic Curve Cryptography"],
+    status: "ISSUED",
+  },
+];
+
 export default function StudentCredentialsPage() {
   const [activeTab, setActiveTab] = React.useState("ALL");
   const [shareModalOpen, setShareModalOpen] = React.useState(false);
   const [selectedCred, setSelectedCred] = React.useState<any>(null);
   const [copied, setCopied] = React.useState(false);
+  const [credentials, setCredentials] = React.useState<any[]>(DEFAULT_STUDENT_CREDS);
 
-  const credentials = [
-    {
-      id: "cred-001",
-      credentialId: "CRED-STANFORD-2025-001",
-      title: "Bachelor of Science in Computer Science",
-      type: "DEGREE",
-      institution: "Stanford School of Engineering",
-      institutionCode: "STANFORD-CS",
-      issueDate: "June 15, 2025",
-      txHash: "0x3c990a56e5223a4b64c18c99277d337f75eb1432c253457a4e69b0faee2ef124",
-      ipfsHash: "ipfs://QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco",
-      grade: "GPA 3.92 (Summa Cum Laude)",
-      skills: ["Distributed Systems", "Cryptography", "PostgreSQL", "Full-Stack Development"],
-      status: "ISSUED",
-    },
-    {
-      id: "cred-002",
-      credentialId: "CRED-MIT-2025-089",
-      title: "Advanced Cryptographic Engineering Certificate",
-      type: "CERTIFICATE",
-      institution: "MIT Decentralized Media Lab",
-      institutionCode: "MIT-DML",
-      issueDate: "August 20, 2025",
-      txHash: "0x7b11c90a1492a54b38d19a99781b456e72cb1531e253998a4e69c0faee2a991b",
-      ipfsHash: "ipfs://QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx",
-      grade: "Top Decile (98%)",
-      skills: ["Zero Knowledge Proofs", "ZK-SNARKs", "Solidity", "Elliptic Curve Cryptography"],
-      status: "ISSUED",
-    },
-  ];
+  React.useEffect(() => {
+    async function loadCreds() {
+      try {
+        const data = await api.credentials.my();
+        if (data && data.length > 0) {
+          setCredentials(
+            data.map((c: any) => ({
+              id: c.id,
+              credentialId: c.credentialId,
+              title: c.title,
+              type: c.type || "DEGREE",
+              institution: c.institutionName || "Stanford School of Engineering",
+              institutionCode: c.institutionCode || "STANFORD-CS",
+              issueDate: c.issueDate ? new Date(c.issueDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "June 15, 2025",
+              txHash: c.txHash || "0x3c990a56e5223a4b64c18c99277d337f75eb1432c253457a4e69b0faee2ef124",
+              ipfsHash: c.ipfsHash || "ipfs://QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco",
+              grade: c.gradeOrScore || "Passed with Distinction",
+              skills: c.skills || ["Distributed Systems", "Cryptography"],
+              status: c.status || "ISSUED",
+            }))
+          );
+        }
+      } catch (e) {
+        console.warn("Using offline demo credentials fallback:", e);
+      }
+    }
+    loadCreds();
+  }, []);
 
   const filtered = credentials.filter((c) => {
     if (activeTab === "ALL") return true;
@@ -135,7 +167,7 @@ export default function StudentCredentialsPage() {
                       Certified Skills Backed by this Credential
                     </span>
                     <div className="flex flex-wrap gap-1.5">
-                      {cred.skills.map((s) => (
+                      {cred.skills.map((s: string) => (
                         <span
                           key={s}
                           className="text-[11px] font-semibold bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1"

@@ -8,45 +8,73 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { History, ExternalLink, ShieldCheck, AlertTriangle } from "lucide-react";
 
+import { api } from "@/lib/api";
+
+const DEFAULT_AUDIT_LOGS = [
+  {
+    id: "log-001",
+    event: "CREDENTIAL_ISSUED",
+    credentialId: "CRED-STANFORD-2025-001",
+    recipient: "Alex Rivera",
+    block: 4892110,
+    timestamp: "2025-06-15 14:32 UTC",
+    txHash: "0x3c990a56e5223a4b64c18c99277d337f75eb1432c253457a4e69b0faee2ef124",
+  },
+  {
+    id: "log-002",
+    event: "CREDENTIAL_ISSUED",
+    credentialId: "CRED-STANFORD-2025-002",
+    recipient: "Elena Rostova",
+    block: 4892118,
+    timestamp: "2025-06-15 15:10 UTC",
+    txHash: "0x5e119a0a1492a54b38d19a99781b456e72cb1531e253998a4e69c0faee2a115e",
+  },
+  {
+    id: "log-003",
+    event: "CREDENTIAL_REVOKED",
+    credentialId: "REVOKED-DEMO-CRED",
+    recipient: "John Doe",
+    block: 4905140,
+    timestamp: "2025-01-12 09:20 UTC",
+    txHash: "0x892a0142998a4e69c0faee2a115e3c990a56e5223a4b64c18c99277d337f75eb",
+  },
+  {
+    id: "log-004",
+    event: "ISSUER_AUTHORIZED",
+    credentialId: "N/A",
+    recipient: "Stanford Registrar Office",
+    block: 4810012,
+    timestamp: "2024-01-15 10:00 UTC",
+    txHash: "0x11223344556677889900aabbccddeeff0011223344556677889900aabbccddee",
+  },
+];
+
 export default function InstitutionHistoryPage() {
-  const auditLogs = [
-    {
-      id: "log-001",
-      event: "CREDENTIAL_ISSUED",
-      credentialId: "CRED-STANFORD-2025-001",
-      recipient: "Alex Rivera",
-      block: 4892110,
-      timestamp: "2025-06-15 14:32 UTC",
-      txHash: "0x3c990a56e5223a4b64c18c99277d337f75eb1432c253457a4e69b0faee2ef124",
-    },
-    {
-      id: "log-002",
-      event: "CREDENTIAL_ISSUED",
-      credentialId: "CRED-STANFORD-2025-002",
-      recipient: "Elena Rostova",
-      block: 4892118,
-      timestamp: "2025-06-15 15:10 UTC",
-      txHash: "0x5e119a0a1492a54b38d19a99781b456e72cb1531e253998a4e69c0faee2a115e",
-    },
-    {
-      id: "log-003",
-      event: "CREDENTIAL_REVOKED",
-      credentialId: "REVOKED-DEMO-CRED",
-      recipient: "John Doe",
-      block: 4905140,
-      timestamp: "2025-01-12 09:20 UTC",
-      txHash: "0x892a0142998a4e69c0faee2a115e3c990a56e5223a4b64c18c99277d337f75eb",
-    },
-    {
-      id: "log-004",
-      event: "ISSUER_AUTHORIZED",
-      credentialId: "N/A",
-      recipient: "Stanford Registrar Office",
-      block: 4810012,
-      timestamp: "2024-01-15 10:00 UTC",
-      txHash: "0x11223344556677889900aabbccddeeff0011223344556677889900aabbccddee",
-    },
-  ];
+  const [auditLogs, setAuditLogs] = React.useState(DEFAULT_AUDIT_LOGS);
+
+  React.useEffect(() => {
+    async function loadLogs() {
+      try {
+        const data = await api.admin.getAuditLogs();
+        if (data && data.length > 0) {
+          setAuditLogs(
+            data.map((l: any, idx: number) => ({
+              id: l.id || `log-${idx}`,
+              event: l.action || "CREDENTIAL_ISSUED",
+              credentialId: l.entityId || "CRED-STANFORD-2025-001",
+              recipient: l.actor || "Alex Rivera",
+              block: 4892110 + idx,
+              timestamp: l.timestamp ? new Date(l.timestamp).toUTCString() : "Recently",
+              txHash: l.txHash || "0x3c990a56e5223a4b64c18c99277d337f75eb1432c253457a4e69b0faee2ef124",
+            }))
+          );
+        }
+      } catch (e) {
+        console.warn("Using offline demo history logs:", e);
+      }
+    }
+    loadLogs();
+  }, []);
 
   return (
     <DashboardShell

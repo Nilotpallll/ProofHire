@@ -236,6 +236,7 @@ export class CredentialsService {
 
     return {
       message: 'Credential successfully issued and anchored to blockchain registry.',
+      credentialId: credId,
       credential: newRecord,
       qrVerificationUrl: `http://localhost:3000/verify/${credId}`,
       verificationUrl: `/verify/${credId}`,

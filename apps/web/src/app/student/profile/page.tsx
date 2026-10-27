@@ -23,8 +23,35 @@ export default function StudentProfilePage() {
   const [linkedinUrl, setLinkedinUrl] = React.useState("https://linkedin.com/in/alexrivera-demo");
   const [saved, setSaved] = React.useState(false);
 
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedProfile = localStorage.getItem("proofhire_student_profile");
+      if (savedProfile) {
+        try {
+          const p = JSON.parse(savedProfile);
+          if (p.name) setName(p.name);
+          if (p.headline) setHeadline(p.headline);
+          if (p.bio) setBio(p.bio);
+          if (p.university) setUniversity(p.university);
+          if (p.major) setMajor(p.major);
+          if (p.gradYear) setGradYear(p.gradYear);
+          if (p.gpa) setGpa(p.gpa);
+          if (p.portfolioUrl) setPortfolioUrl(p.portfolioUrl);
+          if (p.githubUrl) setGithubUrl(p.githubUrl);
+          if (p.linkedinUrl) setLinkedinUrl(p.linkedinUrl);
+        } catch {}
+      }
+    }
+  }, []);
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "proofhire_student_profile",
+        JSON.stringify({ name, headline, bio, university, major, gradYear, gpa, portfolioUrl, githubUrl, linkedinUrl })
+      );
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };

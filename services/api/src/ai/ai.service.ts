@@ -58,13 +58,31 @@ export class AiService {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          candidate_profile: { skills: candidateSkills, verified_credentials: verifiedSkills },
-          job_requirements: { required_skills: requiredSkills, preferred_skills: ['AWS', 'Docker'] },
+          candidateSkills,
+          candidateProjects: ['ZK-Registry Protocol', 'Next.js Frontend'],
+          candidateExperienceYears: 3.0,
+          requiredSkills,
+          preferredSkills: ['AWS', 'Docker'],
+          verifiedSkills,
         }),
       });
 
       if (response.ok) {
-        return await response.json();
+        const result = await response.json();
+        return {
+          match_score: result.overallMatchScore,
+          overallMatchScore: result.overallMatchScore,
+          breakdown: {
+            required_skills_coverage: result.requiredSkillsCoverage,
+            preferred_skills_coverage: result.preferredSkillsCoverage,
+            verified_credential_boost: result.verificationBonusPercentage,
+          },
+          matched_required_skills: result.matchedRequiredSkills,
+          missing_required_skills: result.missingRequiredSkills,
+          matched_preferred_skills: result.matchedPreferredSkills,
+          explanation: result.explanation,
+          methodology: result.matchingMethodology,
+        };
       }
     } catch (err) {
       this.logger.warn(`AI matching microservice unreachable. Using local calculation.`);
