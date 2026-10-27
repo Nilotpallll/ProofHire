@@ -33,10 +33,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       primary:
         "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-sm",
       secondary:
-        "bg-slate-100 text-slate-800 hover:bg-slate-200 active:bg-slate-300 border border-slate-200",
+        "bg-slate-100 text-slate-800 hover:bg-slate-200 active:bg-slate-300 border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:border-slate-700",
       outline:
-        "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100 shadow-subtle",
-      ghost: "text-slate-600 hover:text-slate-900 hover:bg-slate-100",
+        "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100 shadow-subtle dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800",
+      ghost:
+        "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800",
       danger:
         "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm",
       success:

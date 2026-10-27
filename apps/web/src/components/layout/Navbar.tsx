@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
-import { ShieldCheck, Menu, X, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { ShieldCheck, Menu, X, ArrowRight } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -33,7 +34,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-[#090D1A]/90 transition-colors">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link
@@ -44,10 +45,10 @@ export function Navbar() {
             <ShieldCheck className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-bold tracking-tight text-slate-900 leading-none">
+            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none">
               ProofHire
             </span>
-            <span className="text-[10px] font-medium tracking-wide text-brand-600 uppercase">
+            <span className="text-[10px] font-medium tracking-wide text-brand-600 dark:text-brand-400 uppercase">
               Verifiable Credentials
             </span>
           </div>
@@ -64,8 +65,10 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-md px-1 py-0.5 ${
-                  isActive ? "text-brand-600 font-semibold" : "text-slate-600"
+                className={`text-sm font-medium transition-colors hover:text-brand-600 dark:hover:text-brand-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-md px-1 py-0.5 ${
+                  isActive
+                    ? "text-brand-600 dark:text-brand-400 font-semibold"
+                    : "text-slate-600 dark:text-slate-300"
                 }`}
               >
                 {link.label}
@@ -74,8 +77,10 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Action Buttons */}
+        {/* Action Buttons & Theme Toggle */}
         <div className="hidden md:flex items-center gap-3">
+          <ThemeToggle showDropdown size="sm" />
+
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <Link href={getDashboardHref()}>
@@ -103,33 +108,36 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Mobile menu trigger */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle navigation menu"
-          aria-expanded={mobileMenuOpen}
-          className="md:hidden rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-        >
-          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        {/* Mobile menu trigger + theme toggle */}
+        <div className="flex md:hidden items-center gap-2">
+          <ThemeToggle size="sm" />
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu dropdown */}
       {mobileMenuOpen && (
-        <div className="border-b border-slate-200 bg-white px-4 py-5 md:hidden space-y-4 animate-in slide-in-from-top-2 duration-150">
+        <div className="border-b border-slate-200 bg-white px-4 py-5 md:hidden space-y-4 animate-in slide-in-from-top-2 duration-150 dark:border-slate-800 dark:bg-[#0B1120]">
           <nav className="flex flex-col space-y-3">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-base font-medium text-slate-700 hover:text-brand-600 px-2 py-1 rounded"
+                className="text-base font-medium text-slate-700 hover:text-brand-600 dark:text-slate-200 dark:hover:text-brand-400 px-2 py-1 rounded"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
-          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
             {isAuthenticated ? (
               <>
                 <Link

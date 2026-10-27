@@ -32,8 +32,8 @@ export function Tabs({
       className={cn(
         "flex items-center",
         variant === "underline"
-          ? "border-b border-slate-200 gap-6"
-          : "bg-slate-100/80 p-1 rounded-lg gap-1 border border-slate-200/60",
+          ? "border-b border-slate-200 dark:border-slate-800 gap-6"
+          : "bg-slate-100/80 dark:bg-slate-900/90 p-1 rounded-lg gap-1 border border-slate-200/60 dark:border-slate-800",
         className
       )}
     >
@@ -52,14 +52,14 @@ export function Tabs({
               variant === "underline" && [
                 "pb-3 pt-1 border-b-2",
                 isActive
-                  ? "border-brand-600 text-brand-600 font-semibold"
-                  : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300",
+                  ? "border-brand-600 text-brand-600 dark:border-brand-500 dark:text-brand-400 font-semibold"
+                  : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:border-slate-700",
               ],
               variant === "pills" && [
                 "px-3 py-1.5 rounded-md",
                 isActive
-                  ? "bg-white text-slate-900 shadow-subtle font-semibold"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-white/50",
+                  ? "bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100 shadow-subtle font-semibold"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-white/50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/50",
               ]
             )}
           >
@@ -70,8 +70,8 @@ export function Tabs({
                 className={cn(
                   "rounded-full px-1.5 py-0.2 text-[10px] font-semibold leading-none",
                   isActive
-                    ? "bg-brand-100 text-brand-700"
-                    : "bg-slate-200 text-slate-600"
+                    ? "bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300"
+                    : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                 )}
               >
                 {tab.badge}

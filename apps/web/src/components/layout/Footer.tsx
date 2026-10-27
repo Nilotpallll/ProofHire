@@ -4,7 +4,7 @@ import { ShieldCheck, Lock, Cpu, Globe } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white">
+    <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-[#0B1120] transition-colors">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4 lg:grid-cols-5">
           {/* Brand Col */}
@@ -13,22 +13,22 @@ export function Footer() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white shadow-sm">
                 <ShieldCheck className="h-4 w-4" />
               </div>
-              <span className="text-lg font-bold tracking-tight text-slate-900">
+              <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
                 ProofHire
               </span>
             </Link>
-            <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
               ProofHire is the decentralized credential verification & recruitment platform.
               Bridging academic institutions, students, and recruiters with cryptographic proofs and intelligent matching.
             </p>
-            <div className="flex items-center gap-3 text-xs text-slate-600 font-medium">
+            <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400 font-medium">
               <span className="inline-flex items-center gap-1">
-                <Lock className="h-3.5 w-3.5 text-emerald-600" />
+                <Lock className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                 Zero-Knowledge Verifiable
               </span>
               <span>•</span>
               <span className="inline-flex items-center gap-1">
-                <Cpu className="h-3.5 w-3.5 text-brand-600" />
+                <Cpu className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" />
                 AI Skill Verification
               </span>
             </div>
@@ -36,27 +36,27 @@ export function Footer() {
 
           {/* Solutions Col */}
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
               Platform Portals
             </h4>
             <ul className="mt-3 space-y-2 text-xs">
               <li>
-                <Link href="/student/dashboard" className="text-slate-500 hover:text-slate-900">
+                <Link href="/student/dashboard" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
                   Student Portal
                 </Link>
               </li>
               <li>
-                <Link href="/recruiter/dashboard" className="text-slate-500 hover:text-slate-900">
+                <Link href="/recruiter/dashboard" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
                   Recruiter Portal
                 </Link>
               </li>
               <li>
-                <Link href="/institution/dashboard" className="text-slate-500 hover:text-slate-900">
+                <Link href="/institution/dashboard" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
                   Institution Portal
                 </Link>
               </li>
               <li>
-                <Link href="/admin/dashboard" className="text-slate-500 hover:text-slate-900">
+                <Link href="/admin/dashboard" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
                   Admin Oversight
                 </Link>
               </li>
@@ -65,22 +65,22 @@ export function Footer() {
 
           {/* Trust & Proofs */}
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
               Verification
             </h4>
             <ul className="mt-3 space-y-2 text-xs">
               <li>
-                <Link href="/verify/demo-credential" className="text-slate-500 hover:text-slate-900">
+                <Link href="/verify/demo-credential" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
                   Public Verification Tool
                 </Link>
               </li>
               <li>
-                <Link href="/how-it-works" className="text-slate-500 hover:text-slate-900">
+                <Link href="/how-it-works" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
                   Cryptographic Protocol
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="text-slate-500 hover:text-slate-900">
+                <Link href="/about" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
                   About ProofHire
                 </Link>
               </li>
@@ -89,7 +89,7 @@ export function Footer() {
                   href="https://sepolia.etherscan.io"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-slate-500 hover:text-slate-900 flex items-center gap-1"
+                  className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 flex items-center gap-1"
                 >
                   <Globe className="h-3 w-3" /> Sepolia Explorer
                 </a>
@@ -99,22 +99,22 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
               Governance & Security
             </h4>
             <ul className="mt-3 space-y-2 text-xs">
-              <li className="text-slate-500">FERPA / GDPR Compliant</li>
-              <li className="text-slate-500">Non-Custodial Identity</li>
-              <li className="text-slate-500">Decentralized IPFS Storage</li>
-              <li className="text-slate-500">Open-Source Registry</li>
+              <li className="text-slate-500 dark:text-slate-400">FERPA / GDPR Compliant</li>
+              <li className="text-slate-500 dark:text-slate-400">Non-Custodial Identity</li>
+              <li className="text-slate-500 dark:text-slate-400">Decentralized IPFS Storage</li>
+              <li className="text-slate-500 dark:text-slate-400">Open-Source Registry</li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-8 border-t border-slate-100 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
+        <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 dark:text-slate-500 gap-2">
           <p>© {new Date().getFullYear()} ProofHire Platform. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <span className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full text-[11px] font-medium border border-emerald-200">
+            <span className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full text-[11px] font-medium border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
               All Systems Operational
             </span>

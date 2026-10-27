@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAuth, Role } from "@/context/AuthContext";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import {
   ShieldCheck,
   LayoutDashboard,
@@ -21,8 +22,6 @@ import {
   LogOut,
   Menu,
   X,
-  Bell,
-  Search,
   ChevronRight,
   ExternalLink,
 } from "lucide-react";
@@ -49,7 +48,6 @@ export function DashboardShell({
   const pathname = usePathname();
   const { user, switchRole, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  const [roleSwitcherOpen, setRoleSwitcherOpen] = React.useState(false);
 
   // Role-specific navigation items
   const navConfig: Record<Role, NavItem[]> = {
@@ -97,7 +95,7 @@ export function DashboardShell({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090D1A] flex transition-colors">
       {/* Mobile Sidebar Backdrop */}
       {sidebarOpen && (
         <div
@@ -109,29 +107,29 @@ export function DashboardShell({
       {/* Sidebar Navigation */}
       <aside
         aria-label="Sidebar navigation"
-        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-200/90 bg-white flex flex-col justify-between transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0B1120] flex flex-col justify-between transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div>
           {/* Logo */}
-          <div className="flex h-16 items-center justify-between px-6 border-b border-slate-100">
+          <div className="flex h-16 items-center justify-between px-6 border-b border-slate-100 dark:border-slate-800">
             <Link href="/" className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white shadow-sm">
                 <ShieldCheck className="h-4 w-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-base font-bold tracking-tight text-slate-900 leading-none">
+                <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none">
                   ProofHire
                 </span>
-                <span className="text-[10px] font-semibold text-brand-600 uppercase tracking-wider mt-0.5">
+                <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wider mt-0.5">
                   {roleLabels[role].name} Portal
                 </span>
               </div>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-slate-400 hover:text-slate-600 p-1 rounded-md"
+              className="lg:hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-md"
             >
               <X className="h-5 w-5" />
             </button>
@@ -148,13 +146,15 @@ export function DashboardShell({
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                     isActive
-                      ? "bg-brand-50 text-brand-700 font-semibold shadow-subtle"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      ? "bg-brand-50 text-brand-700 font-semibold shadow-subtle dark:bg-brand-950/60 dark:text-brand-300"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
                   }`}
                 >
                   <span
                     className={
-                      isActive ? "text-brand-600" : "text-slate-400 group-hover:text-slate-600"
+                      isActive
+                        ? "text-brand-600 dark:text-brand-400"
+                        : "text-slate-400 group-hover:text-slate-600 dark:text-slate-500 dark:group-hover:text-slate-300"
                     }
                   >
                     {item.icon}
@@ -167,12 +167,12 @@ export function DashboardShell({
         </div>
 
         {/* Bottom Sidebar: Role Switcher for Evaluator & Logout */}
-        <div className="p-3 border-t border-slate-100 space-y-2">
+        <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
           {/* Role Switcher Pill for Effortless Testing */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-2.5">
-            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 dark:border-slate-800 dark:bg-slate-900/60">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
               <span>Quick Role Switcher</span>
-              <span className="text-[9px] text-brand-600 font-mono">Demo Mode</span>
+              <span className="text-[9px] text-brand-600 dark:text-brand-400 font-mono">Demo Mode</span>
             </div>
             <div className="grid grid-cols-2 gap-1 text-xs">
               {(["STUDENT", "RECRUITER", "INSTITUTION", "ADMIN"] as Role[]).map((r) => (
@@ -182,7 +182,7 @@ export function DashboardShell({
                   className={`px-2 py-1 text-[11px] font-medium rounded transition-all text-center ${
                     role === r
                       ? "bg-brand-600 text-white font-semibold shadow-xs"
-                      : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                      : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"
                   }`}
                 >
                   {r.charAt(0) + r.slice(1).toLowerCase()}
@@ -192,23 +192,23 @@ export function DashboardShell({
           </div>
 
           {/* User Profile item */}
-          <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-100">
+          <div className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-700 uppercase">
+              <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-300 uppercase">
                 {user?.name?.charAt(0) || "U"}
               </div>
               <div className="truncate">
-                <p className="text-xs font-semibold text-slate-900 truncate">
+                <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
                   {user?.name || "Demo User"}
                 </p>
-                <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{user?.email}</p>
               </div>
             </div>
             <button
               onClick={logout}
               aria-label="Log out"
               title="Log out"
-              className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
             >
               <LogOut className="h-4 w-4" />
             </button>
@@ -219,25 +219,25 @@ export function DashboardShell({
       {/* Main Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/90 bg-white/95 px-4 sm:px-6 lg:px-8 backdrop-blur-md">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/90 bg-white/95 px-4 sm:px-6 lg:px-8 backdrop-blur-md dark:border-slate-800/90 dark:bg-[#0B1120]/95 transition-colors">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
               aria-label="Open sidebar"
-              className="lg:hidden rounded-lg p-2 text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+              className="lg:hidden rounded-lg p-2 text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-              <Link href="/" className="hover:text-slate-600">
+            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+              <Link href="/" className="hover:text-slate-600 dark:hover:text-slate-300">
                 ProofHire
               </Link>
               <ChevronRight className="h-3 w-3" />
-              <span className="text-slate-600 font-medium capitalize">
+              <span className="text-slate-600 dark:text-slate-300 font-medium capitalize">
                 {role.toLowerCase()}
               </span>
               <ChevronRight className="h-3 w-3" />
-              <span className="text-slate-900 font-semibold">{title}</span>
+              <span className="text-slate-900 dark:text-slate-100 font-semibold">{title}</span>
             </div>
           </div>
 
@@ -245,9 +245,9 @@ export function DashboardShell({
           <div className="flex items-center gap-3">
             <Link
               href="/verify/demo-credential"
-              className="hidden md:inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-brand-600 bg-slate-100/80 px-2.5 py-1.5 rounded-lg border border-slate-200/60"
+              className="hidden md:inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-brand-600 bg-slate-100/80 px-2.5 py-1.5 rounded-lg border border-slate-200/60 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700 dark:hover:text-brand-400"
             >
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               Public Verification Tool <ExternalLink className="h-3 w-3" />
             </Link>
 
@@ -255,7 +255,9 @@ export function DashboardShell({
               Connected (Sepolia Testnet)
             </Badge>
 
-            <Link href="/" className="text-xs text-slate-500 hover:text-slate-800 hidden sm:block">
+            <ThemeToggle showDropdown size="sm" />
+
+            <Link href="/" className="text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hidden sm:block">
               Exit Portal
             </Link>
           </div>
@@ -266,11 +268,11 @@ export function DashboardShell({
           {/* Page Header */}
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 {title}
               </h1>
               {subtitle && (
-                <p className="text-xs text-slate-500 mt-1 max-w-2xl">{subtitle}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">{subtitle}</p>
               )}
             </div>
             {actions && <div className="flex items-center gap-2.5">{actions}</div>}

@@ -8,9 +8,19 @@
     --foreground: 9 13 26;
   }
 
+  .dark {
+    --background: 9 13 26;
+    --foreground: 248 250 252;
+    color-scheme: dark;
+  }
+
   html {
     scroll-behavior: smooth;
     color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
   }
 
   body {
@@ -19,12 +29,23 @@
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .dark body,
+  html.dark body {
+    background-color: #090D1A;
+    color: #F8FAFC;
   }
 
   /* Accessible focus indicators for WCAG 2.2 AA */
   :focus-visible {
     outline: 2px solid #2563EB;
     outline-offset: 2px;
+  }
+
+  .dark :focus-visible {
+    outline-color: #60A5FA;
   }
 
   /* Accessible skip link */
@@ -74,4 +95,16 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #0B0F19;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1E293B;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
 }
