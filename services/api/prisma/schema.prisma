@@ -1,0 +1,384 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  STUDENT
+  RECRUITER
+  INSTITUTION
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  PENDING_APPROVAL
+  SUSPENDED
+  REJECTED
+}
+
+enum InstitutionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum CredentialStatus {
+  PENDING
+  ISSUED
+  REVOKED
+}
+
+enum CredentialType {
+  DEGREE
+  DIPLOMA
+  CERTIFICATE
+  BADGE
+  INTERNSHIP
+  TRANSCRIPT
+}
+
+enum ApplicationStatus {
+  APPLIED
+  UNDER_REVIEW
+  SHORTLISTED
+  INTERVIEW
+  SELECTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  REMOTE
+}
+
+enum ExperienceLevel {
+  ENTRY
+  MID
+  SENIOR
+  LEAD
+}
+
+enum JobStatus {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+enum MembershipRole {
+  ADMIN
+  ISSUER
+  VIEWER
+}
+
+enum VerificationType {
+  PUBLIC_WEB
+  RECRUITER
+  API
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  passwordHash String
+  name         String
+  role         UserRole      @default(STUDENT)
+  status       AccountStatus @default(ACTIVE)
+  avatarUrl    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  studentProfile   StudentProfile?
+  recruiterProfile RecruiterProfile?
+  memberships      InstitutionMembership[]
+  wallets          Wallet[]
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model StudentProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline       String?
+  bio            String?
+  university     String?
+  major          String?
+  graduationYear Int?
+  gpa            Float?
+  githubUrl      String?
+  linkedinUrl    String?
+  portfolioUrl   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  credentials  Credential[]
+  resumes      Resume[]
+  applications Application[]
+  skills       StudentSkill[]
+}
+
+model RecruiterProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName     String
+  companyWebsite  String?
+  designation     String?
+  industry        String?
+  verifiedCompany Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  jobs Job[]
+}
+
+model Institution {
+  id           String            @id @default(uuid())
+  name         String
+  code         String            @unique
+  website      String?
+  status       InstitutionStatus @default(PENDING)
+  contactEmail String
+  contactPhone String?
+  logoUrl      String?
+  verifiedAt   DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  memberships InstitutionMembership[]
+  credentials Credential[]
+
+  @@index([code])
+  @@index([status])
+}
+
+model InstitutionMembership {
+  id            String         @id @default(uuid())
+  institutionId String
+  institution   Institution    @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role          MembershipRole @default(ISSUER)
+  createdAt     DateTime       @default(now())
+
+  @@unique([institutionId, userId])
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address   String   @unique
+  chainId   Int      @default(31337)
+  isPrimary Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([address])
+}
+
+model Credential {
+  id               String           @id @default(uuid())
+  credentialId     String           @unique // Hash identifier or UUID
+  title            String
+  type             CredentialType   @default(CERTIFICATE)
+  recipientId      String
+  recipient        StudentProfile   @relation(fields: [recipientId], references: [id], onDelete: Restrict)
+  institutionId    String
+  institution      Institution      @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  issueDate        DateTime         @default(now())
+  expiryDate       DateTime?
+  status           CredentialStatus @default(ISSUED)
+  ipfsHash         String?
+  merkleRoot       String?
+  txHash           String?
+  blockNumber      Int?
+  gradeOrScore     String?
+  skills           String[]
+  metadata         Json?
+  revocationReason String?
+  revokedAt        DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  verifications CredentialVerification[]
+
+  @@index([credentialId])
+  @@index([status])
+  @@index([recipientId])
+  @@index([institutionId])
+}
+
+model CredentialVerification {
+  id               String           @id @default(uuid())
+  credentialId     String
+  credential       Credential       @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+  verifiedBy       String?
+  ipAddress        String?
+  userAgent        String?
+  result           Boolean
+  verificationType VerificationType @default(PUBLIC_WEB)
+  createdAt        DateTime         @default(now())
+
+  @@index([credentialId])
+}
+
+model Resume {
+  id         String         @id @default(uuid())
+  studentId  String
+  student    StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  fileName   String
+  fileUrl    String?
+  rawText    String?
+  parsedData Json?
+  version    Int            @default(1)
+  isActive   Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  analysis     ResumeAnalysis?
+  applications Application[]
+
+  @@index([studentId])
+}
+
+model ResumeAnalysis {
+  id               String   @id @default(uuid())
+  resumeId         String   @unique
+  resume           Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  score            Int
+  summary          String
+  detectedSkills   String[]
+  verifiedSkills   String[]
+  unverifiedSkills String[]
+  strengths        String[]
+  improvements     String[]
+  recommendedRoles String[]
+  aiModel          String   @default("proofhire-nlp-v1")
+  createdAt        DateTime @default(now())
+}
+
+model Skill {
+  id       String   @id @default(uuid())
+  name     String   @unique
+  category String?
+  slug     String   @unique
+
+  studentSkills StudentSkill[]
+  jobSkills     JobSkill[]
+
+  @@index([name])
+}
+
+model StudentSkill {
+  id                   String         @id @default(uuid())
+  studentProfileId     String
+  studentProfile       StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  skillId              String
+  skill                Skill          @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  proficiency          Int            @default(3) // 1-5 scale
+  isVerified           Boolean        @default(false)
+  verifiedCredentialId String?
+  createdAt            DateTime       @default(now())
+
+  @@unique([studentProfileId, skillId])
+}
+
+model Job {
+  id              String          @id @default(uuid())
+  recruiterId     String
+  recruiter       RecruiterProfile @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  department      String
+  location        String
+  jobType         JobType         @default(FULL_TIME)
+  experienceLevel ExperienceLevel @default(ENTRY)
+  salaryMin       Int?
+  salaryMax       Int?
+  requiredSkills  String[]
+  preferredSkills String[]
+  status          JobStatus       @default(OPEN)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  jobSkills    JobSkill[]
+  applications Application[]
+
+  @@index([recruiterId])
+  @@index([status])
+}
+
+model JobSkill {
+  id         String  @id @default(uuid())
+  jobId      String
+  job        Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skillId    String
+  skill      Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  isRequired Boolean @default(true)
+
+  @@unique([jobId, skillId])
+}
+
+model Application {
+  id               String            @id @default(uuid())
+  jobId            String
+  job              Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  studentProfileId String
+  studentProfile   StudentProfile    @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  resumeId         String?
+  resume           Resume?           @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  status           ApplicationStatus @default(APPLIED)
+  coverLetter      String?
+  aiMatchScore     Int?
+  matchReasons     String[]
+  missingSkills    String[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([jobId])
+  @@index([studentProfileId])
+  @@index([status])
+}
+
+model AuditLog {
+  id         String    @id @default(uuid())
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  role       UserRole?
+  action     String
+  entityType String
+  entityId   String
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime  @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("INFO")
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}

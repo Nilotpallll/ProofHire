@@ -36,6 +36,10 @@ Thumbs.db
 # Hardhat
 cache/
 artifacts/
+typechain-types/
+
+# TypeScript build cache
+*.tsbuildinfo
 
 # Local databases
-*.db
+*.db
