@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { CredentialStatusIndicator } from "@/components/ui/CredentialStatusIndicator";
+import { HeroAtmosphere } from "@/components/ui/HeroAtmosphere";
+import { LuxurySpotlightCard } from "@/components/ui/LuxurySpotlightCard";
+import { LiveNetworkTicker } from "@/components/interactive/LiveNetworkTicker";
+import { InteractiveZkProofVisualizer } from "@/components/interactive/InteractiveZkProofVisualizer";
+import { InteractiveAiFitSimulator } from "@/components/interactive/InteractiveAiFitSimulator";
+import { InteractiveBlockchainExplorerWidget } from "@/components/interactive/InteractiveBlockchainExplorerWidget";
+import { LiveStatsCounter } from "@/components/interactive/LiveStatsCounter";
 import {
   ShieldCheck,
   Search,
@@ -25,6 +32,10 @@ import {
   AlertCircle,
   Copy,
   Check,
+  Award,
+  Zap,
+  Globe,
+  Fingerprint,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -77,7 +88,7 @@ export default function LandingPage() {
         setVerificationResult({
           isValid: true,
           title: "Advanced Cryptographic Engineering Certificate",
-          recipient: "Alex Rivera",
+          recipient: "Elena Rostova",
           institution: "MIT Decentralized Media Lab",
           issueDate: "August 20, 2025",
           txHash: "0x7b11c90a1492a54b38d19a99781b456e72cb1531e253998a4e69c0faee2a991b",
@@ -126,83 +137,190 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#090D1A] transition-colors">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#090D1A] transition-colors relative selection:bg-brand-500 selection:text-white">
+      {/* Top Navbar */}
       <Navbar />
 
-      <main id="main-content" className="flex-1">
-        {/* 1. Hero Section */}
-        <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28 border-b border-slate-200/80 dark:border-slate-800 bg-gradient-to-b from-white via-slate-50/50 to-slate-100/30 dark:from-[#0B1120] dark:via-[#090D1A] dark:to-[#0B1120] transition-colors">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center space-y-6">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50/80 px-3.5 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-950/60 dark:border-brand-800 dark:text-brand-300 shadow-subtle">
-                <Sparkles className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" />
-                <span>Next-Gen Decentralized Credential Verification</span>
-              </div>
+      {/* Live Ethereum Telemetry Ticker */}
+      <LiveNetworkTicker />
 
-              {/* Tagline & Headline */}
-              <div className="space-y-3">
-                <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl md:text-6xl leading-[1.15]">
+      <main id="main-content" className="flex-1 space-y-20 pb-20">
+        {/* 1. Hero Section with Atmosphere and Interactive 3D Preview */}
+        <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-32 border-b border-slate-200/80 dark:border-slate-800">
+          <HeroAtmosphere />
+
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              {/* Left Column: Headlines & Actions */}
+              <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+                {/* Floating pill badge */}
+                <div className="inline-flex items-center gap-2 rounded-full border border-brand-200/90 dark:border-brand-800/80 bg-white/80 dark:bg-brand-950/60 px-3.5 py-1 text-xs font-semibold text-brand-700 dark:text-brand-300 shadow-sm backdrop-blur-md">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+                  </span>
+                  <span>Next-Gen Decentralized Credential Infrastructure</span>
+                  <span className="text-slate-300 dark:text-slate-700">•</span>
+                  <span className="font-mono text-[10px] text-brand-600 dark:text-brand-400">v2.4 Live</span>
+                </div>
+
+                {/* Headline */}
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]">
                   Your achievements deserve to be{" "}
-                  <span className="text-brand-600 dark:text-brand-400 underline decoration-brand-200 dark:decoration-brand-800 decoration-wavy underline-offset-8">
-                    trusted.
+                  <span className="text-gradient-brand">
+                    mathematically trusted.
                   </span>
                 </h1>
-                <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                  Verify professional credentials, showcase authentic achievements, and make more informed hiring decisions with blockchain-backed proofs and AI-assisted recruitment.
+
+                {/* Subtitle */}
+                <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                  ProofHire bridges accredited universities, students, and recruiters with cryptographic Ethereum proofs, zero-knowledge privacy, and AI candidate matching.
                 </p>
+
+                {/* CTAs */}
+                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
+                  <Link href="/register">
+                    <Button variant="primary" size="lg" className="shadow-glow-brand" rightIcon={<ArrowRight className="h-4 w-4" />}>
+                      Explore ProofHire
+                    </Button>
+                  </Link>
+                  <Link href="/verify/CRED-STANFORD-2025-001">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="glass-card shadow-subtle hover:border-brand-400"
+                      leftIcon={<ShieldCheck className="h-4 w-4 text-emerald-500" />}
+                    >
+                      Instant Verifier Tool
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Micro trust indicators */}
+                <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    Cryptographic Ethereum Signatures
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    Zero-Knowledge Privacy
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    Instant Recruiter Matching
+                  </span>
+                </div>
               </div>
 
-              {/* CTAs */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                <Link href="/register">
-                  <Button variant="primary" size="lg" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                    Explore ProofHire
-                  </Button>
-                </Link>
-                <Link href="/verify/demo-credential">
-                  <Button variant="outline" size="lg" leftIcon={<ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />}>
-                    Verify a Credential
-                  </Button>
-                </Link>
-              </div>
+              {/* Right Column: Holographic Certificate Showcase */}
+              <div className="lg:col-span-5 relative">
+                <LuxurySpotlightCard
+                  glowColor="blue"
+                  className="p-6 sm:p-7 border-brand-200/80 dark:border-slate-800 shadow-2xl relative"
+                >
+                  {/* Holographic Watermark Badge */}
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-500 text-white flex items-center justify-center shadow-glow-brand">
+                        <GraduationCap className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 block">
+                          DECENTRALIZED CREDENTIAL RECORD
+                        </span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
+                          Stanford University
+                        </span>
+                      </div>
+                    </div>
 
-              {/* Micro Trust Indicators */}
-              <div className="pt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  Cryptographically Signed
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  Instant Public Verifier
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  Zero-Knowledge Privacy
-                </span>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 text-[11px] font-semibold border border-emerald-200 dark:border-emerald-800">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      ON-CHAIN VERIFIED
+                    </div>
+                  </div>
+
+                  {/* Certificate Body */}
+                  <div className="py-5 space-y-3">
+                    <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
+                      Academic Degree
+                    </span>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
+                      Bachelor of Science in Computer Science
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Awarded to <strong className="text-slate-900 dark:text-white">Alex Rivera</strong> with Highest Distinction • GPA 3.94
+                    </p>
+
+                    {/* Cryptographic Badges */}
+                    <div className="flex flex-wrap gap-1.5 pt-2">
+                      <span className="bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 text-[10px] font-semibold px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                        Algorithms (Verified)
+                      </span>
+                      <span className="bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 text-[10px] font-semibold px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                        Distributed Systems (Verified)
+                      </span>
+                      <span className="bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-300 text-[10px] font-semibold px-2 py-0.5 rounded border border-brand-200 dark:border-brand-800">
+                        Ethereum EVM
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Hash Footer */}
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2 text-[11px] font-mono">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span>ROOT DIGEST:</span>
+                      <span className="truncate max-w-[170px] text-slate-700 dark:text-slate-300 font-semibold">
+                        0x8f2d59...cfa9
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span>BLOCK:</span>
+                      <span className="text-brand-600 dark:text-brand-400 font-semibold">
+                        #4,912,482 (Sepolia)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Floating seal */}
+                  <div className="absolute -bottom-3 -right-3 h-14 w-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-white flex flex-col items-center justify-center shadow-lg border-2 border-white dark:border-slate-900 rotate-12">
+                    <Award className="h-6 w-6 text-slate-950" />
+                    <span className="text-[8px] font-black text-slate-950 uppercase leading-none">VERIFIED</span>
+                  </div>
+                </LuxurySpotlightCard>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 2. Interactive Verification Demonstration Widget */}
-        <section className="py-16 bg-white dark:bg-[#0B1120] border-b border-slate-200/80 dark:border-slate-800 transition-colors">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        {/* 2. Platform Telemetry & Live Milestone Counters */}
+        <LiveStatsCounter />
+
+        {/* 3. Interactive Zero-Knowledge Cryptography Visualizer */}
+        <section className="px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <InteractiveZkProofVisualizer />
+          </div>
+        </section>
+
+        {/* 4. Interactive Live Verifier Demonstration Widget */}
+        <section className="px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl">
             <div className="text-center space-y-2 mb-8">
               <Badge variant="brand" size="sm">
-                Live Demonstration
+                Instant Verification Sandbox
               </Badge>
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Test the Public Verifier Instantly
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
-                Select a demonstration credential below or type any cryptographic hash to inspect its decentralized audit trail in real time.
+                Select a demonstration credential below or enter any cryptographic hash to inspect its decentralized audit trail in real time.
               </p>
             </div>
 
             {/* Verifier Card */}
-            <div className="rounded-2xl border border-slate-200 bg-white dark:bg-slate-900/90 dark:border-slate-800 p-6 sm:p-8 shadow-card">
+            <LuxurySpotlightCard glowColor="blue" className="p-6 sm:p-8">
               {/* Presets */}
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -264,7 +382,7 @@ export default function LandingPage() {
                   onClick={() => handleRunVerification()}
                   isLoading={isVerifying}
                   variant="primary"
-                  className="w-full sm:w-auto shrink-0"
+                  className="w-full sm:w-auto shrink-0 shadow-glow-brand"
                 >
                   Verify Authenticity
                 </Button>
@@ -360,80 +478,27 @@ export default function LandingPage() {
                   </div>
                 </div>
               )}
-            </div>
+            </LuxurySpotlightCard>
           </div>
         </section>
 
-        {/* 3. How ProofHire Works (3-Step Pipeline) */}
-        <section className="py-20 bg-slate-50 dark:bg-[#090D1A] border-b border-slate-200/80 dark:border-slate-800 transition-colors">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center space-y-3 mb-14">
-              <Badge variant="neutral" size="sm">
-                Decentralized Architecture
-              </Badge>
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-                How ProofHire Works
-              </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                A high-trust trifecta connecting institutions, students, and employers through verifiable cryptography.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Step 1 */}
-              <div className="relative rounded-2xl border border-slate-200 bg-white dark:bg-slate-900/90 dark:border-slate-800 p-7 shadow-card space-y-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/60 dark:text-brand-400 dark:border-brand-800 font-bold text-lg border border-brand-200">
-                  01
-                </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Institution Issues Proof
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Universities and certification bodies sign digital credentials with approved institutional wallets, anchoring the Merkle root on the blockchain.
-                </p>
-                <div className="pt-2 text-xs font-semibold text-brand-600 dark:text-brand-400 flex items-center gap-1">
-                  <ShieldCheck className="h-4 w-4" /> Tamper-Proof Cryptography
-                </div>
-              </div>
-
-              {/* Step 2 */}
-              <div className="relative rounded-2xl border border-slate-200 bg-white dark:bg-slate-900/90 dark:border-slate-800 p-7 shadow-card space-y-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/60 dark:text-brand-400 dark:border-brand-800 font-bold text-lg border border-brand-200">
-                  02
-                </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Student Owns Credentials
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Students aggregate verified diplomas, degrees, and certificates in a sovereign digital wallet, retaining permanent proof of accomplishments.
-                </p>
-                <div className="pt-2 text-xs font-semibold text-brand-600 dark:text-brand-400 flex items-center gap-1">
-                  <Lock className="h-4 w-4" /> Non-Custodial Ownership
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="relative rounded-2xl border border-slate-200 bg-white dark:bg-slate-900/90 dark:border-slate-800 p-7 shadow-card space-y-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/60 dark:text-brand-400 dark:border-brand-800 font-bold text-lg border border-brand-200">
-                  03
-                </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Recruiter Matches & Hires
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Employers evaluate candidates through AI-matched pipelines backed by zero-knowledge verified skills, eliminating 100% of resume embellishments.
-                </p>
-                <div className="pt-2 text-xs font-semibold text-brand-600 dark:text-brand-400 flex items-center gap-1">
-                  <Cpu className="h-4 w-4" /> AI Verified Candidate Fit
-                </div>
-              </div>
-            </div>
+        {/* 5. Interactive AI Resume & Candidate Match Simulator */}
+        <section className="px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <InteractiveAiFitSimulator />
           </div>
         </section>
 
-        {/* 4. Multi-Role Use Cases */}
-        <section className="py-20 bg-white dark:bg-[#0B1120] border-b border-slate-200/80 dark:border-slate-800 transition-colors">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* 6. Real-Time Blockchain Explorer & Audit Registry Widget */}
+        <section className="px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <InteractiveBlockchainExplorerWidget />
+          </div>
+        </section>
+
+        {/* 7. Multi-Role Use Cases (Spotlight Showcase) */}
+        <section className="px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
             <div className="text-center space-y-3 mb-12">
               <Badge variant="brand" size="sm">
                 Built for Every Stakeholder
@@ -480,7 +545,7 @@ export default function LandingPage() {
             </div>
 
             {/* Tab Contents */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-8">
+            <LuxurySpotlightCard glowColor="purple" className="p-8">
               {activeUseCaseTab === "students" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                   <div className="space-y-4">
@@ -512,7 +577,7 @@ export default function LandingPage() {
                       </Link>
                     </div>
                   </div>
-                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-3">
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 p-5 shadow-sm space-y-3">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                       <span className="text-xs font-bold text-slate-900 dark:text-white">
                         Student Portfolio Preview
@@ -571,7 +636,7 @@ export default function LandingPage() {
                       </Link>
                     </div>
                   </div>
-                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-3">
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 p-5 shadow-sm space-y-3">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                       <span className="text-xs font-bold text-slate-900 dark:text-white">
                         Candidate Pipeline Preview
@@ -621,7 +686,7 @@ export default function LandingPage() {
                       </Link>
                     </div>
                   </div>
-                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-3">
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 p-5 shadow-sm space-y-3">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                       <span className="text-xs font-bold text-slate-900 dark:text-white">
                         Issuance Console Preview
@@ -639,72 +704,13 @@ export default function LandingPage() {
                   </div>
                 </div>
               )}
-            </div>
+            </LuxurySpotlightCard>
           </div>
         </section>
 
-        {/* 5. Security & Privacy Principles */}
-        <section className="py-20 bg-slate-50 dark:bg-[#090D1A] border-b border-slate-200/80 dark:border-slate-800 transition-colors">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center space-y-3 mb-12">
-              <Badge variant="neutral" size="sm">
-                Cryptographic Rigor
-              </Badge>
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-                Security & Privacy by Design
-              </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-                No personal data is exposed on public ledgers. We believe true verification should never compromise student privacy.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-6 shadow-card space-y-2">
-                <Lock className="h-6 w-6 text-brand-600 dark:text-brand-400" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Zero-Knowledge Proofs
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Verify credential validity and qualification without disclosing underlying private identity documents.
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-6 shadow-card space-y-2">
-                <ShieldCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Non-Custodial Ownership
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Students own their credentials forever. Platforms cannot seize or alter an issued academic proof.
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-6 shadow-card space-y-2">
-                <Layers className="h-6 w-6 text-brand-600 dark:text-brand-400" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                  IPFS Decentralized Storage
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Credential documents are encrypted and pinned to decentralized IPFS storage rather than centralized silos.
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-6 shadow-card space-y-2">
-                <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                  On-Chain Revocation
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Legitimate institutions can promptly revoke fraudulent or disputed credentials with full transparent rationale.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 6. Frequently Asked Questions */}
-        <section className="py-20 bg-white dark:bg-[#0B1120] border-b border-slate-200/80 dark:border-slate-800 transition-colors">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        {/* 8. Frequently Asked Questions */}
+        <section className="px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl">
             <div className="text-center space-y-3 mb-12">
               <Badge variant="neutral" size="sm">
                 Knowledge Base
@@ -718,14 +724,15 @@ export default function LandingPage() {
               {faqs.map((faq, index) => {
                 const isOpen = openFaq === index;
                 return (
-                  <div
+                  <LuxurySpotlightCard
                     key={index}
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 overflow-hidden shadow-subtle transition-all"
+                    interactive={false}
+                    className="overflow-hidden transition-all border-slate-200 dark:border-slate-800"
                   >
                     <button
                       onClick={() => setOpenFaq(isOpen ? null : index)}
                       aria-expanded={isOpen}
-                      className="w-full flex items-center justify-between p-5 text-left font-semibold text-slate-900 dark:text-slate-100 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      className="w-full flex items-center justify-between p-5 text-left font-semibold text-slate-900 dark:text-slate-100 text-sm hover:bg-slate-50/50 dark:hover:bg-slate-800/40"
                     >
                       <span>{faq.q}</span>
                       <ChevronDown
@@ -739,42 +746,52 @@ export default function LandingPage() {
                         {faq.a}
                       </div>
                     )}
-                  </div>
+                  </LuxurySpotlightCard>
                 );
               })}
             </div>
           </div>
         </section>
 
-        {/* 7. Final Call to Action */}
-        <section className="py-20 bg-gradient-to-b from-brand-950 to-slate-950 text-white">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Ready to verify credentials and hire faster?
-            </h2>
-            <p className="text-sm text-slate-300 max-w-xl mx-auto leading-relaxed">
-              Join students, recruiters, and educational institutions utilizing tamper-proof decentralized identity rails.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <Link href="/register">
-                <Button variant="primary" size="lg" className="bg-brand-500 hover:bg-brand-600">
-                  Create ProofHire Account
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="bg-transparent border-slate-700 text-white hover:bg-slate-900"
-                >
-                  Sign In to Demo Portals
-                </Button>
-              </Link>
+        {/* 9. Final Call to Action */}
+        <section className="px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-6xl relative rounded-3xl overflow-hidden bg-gradient-to-tr from-brand-950 via-slate-950 to-indigo-950 p-10 sm:p-16 text-center text-white border border-slate-800 shadow-2xl">
+            {/* Ambient Lighting */}
+            <div className="absolute top-0 right-1/4 w-80 h-80 bg-brand-500/20 rounded-full blur-[90px] pointer-events-none -z-0" />
+            <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-cyan-500/20 rounded-full blur-[90px] pointer-events-none -z-0" />
+
+            <div className="relative z-10 max-w-3xl mx-auto space-y-6">
+              <Badge variant="brand" size="sm" className="bg-brand-900/60 text-brand-300 border-brand-700">
+                Start In Minutes
+              </Badge>
+              <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
+                Ready to verify credentials and hire faster?
+              </h2>
+              <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
+                Join forward-thinking universities, candidates, and hiring managers utilizing cryptographic proof rails.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
+                <Link href="/register">
+                  <Button variant="primary" size="lg" className="shadow-glow-brand bg-brand-500 hover:bg-brand-600">
+                    Create ProofHire Account
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20"
+                  >
+                    Launch Demo Portals
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </section>
       </main>
 
+      {/* Footer */}
       <Footer />
     </div>
   );

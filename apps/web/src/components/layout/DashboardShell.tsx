@@ -7,6 +7,7 @@ import { useAuth, Role } from "@/context/AuthContext";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { HeroAtmosphere } from "@/components/ui/HeroAtmosphere";
 import {
   ShieldCheck,
   LayoutDashboard,
@@ -107,15 +108,15 @@ export function DashboardShell({
       {/* Sidebar Navigation */}
       <aside
         aria-label="Sidebar navigation"
-        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0B1120] flex flex-col justify-between transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-200/90 dark:border-slate-800/90 bg-white/95 dark:bg-[#0B1120]/95 backdrop-blur-xl flex flex-col justify-between transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div>
-          {/* Logo */}
+          {/* Logo with Glow */}
           <div className="flex h-16 items-center justify-between px-6 border-b border-slate-100 dark:border-slate-800">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white shadow-sm">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-brand-700 via-brand-600 to-cyan-500 text-white shadow-glow-brand transition-transform group-hover:scale-105">
                 <ShieldCheck className="h-4 w-4" />
               </div>
               <div className="flex flex-col">
@@ -144,9 +145,9 @@ export function DashboardShell({
                   key={item.href}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all duration-150 ${
                     isActive
-                      ? "bg-brand-50 text-brand-700 font-semibold shadow-subtle dark:bg-brand-950/60 dark:text-brand-300"
+                      ? "bg-brand-50 text-brand-700 font-semibold shadow-subtle dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800/60"
                       : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
                   }`}
                 >
@@ -169,7 +170,7 @@ export function DashboardShell({
         {/* Bottom Sidebar: Role Switcher for Evaluator & Logout */}
         <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
           {/* Role Switcher Pill for Effortless Testing */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 dark:border-slate-800 dark:bg-slate-900/60">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-2.5 dark:border-slate-800 dark:bg-slate-900/60">
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
               <span>Quick Role Switcher</span>
               <span className="text-[9px] text-brand-600 dark:text-brand-400 font-mono">Demo Mode</span>
@@ -179,7 +180,7 @@ export function DashboardShell({
                 <button
                   key={r}
                   onClick={() => switchRole(r)}
-                  className={`px-2 py-1 text-[11px] font-medium rounded transition-all text-center ${
+                  className={`px-2 py-1 text-[11px] font-medium rounded-lg transition-all text-center ${
                     role === r
                       ? "bg-brand-600 text-white font-semibold shadow-xs"
                       : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"
@@ -192,9 +193,9 @@ export function DashboardShell({
           </div>
 
           {/* User Profile item */}
-          <div className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-300 uppercase">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm">
                 {user?.name?.charAt(0) || "U"}
               </div>
               <div className="truncate">
@@ -208,7 +209,7 @@ export function DashboardShell({
               onClick={logout}
               aria-label="Log out"
               title="Log out"
-              className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
             >
               <LogOut className="h-4 w-4" />
             </button>
@@ -219,7 +220,7 @@ export function DashboardShell({
       {/* Main Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/90 bg-white/95 px-4 sm:px-6 lg:px-8 backdrop-blur-md dark:border-slate-800/90 dark:bg-[#0B1120]/95 transition-colors">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/90 bg-white/80 px-4 sm:px-6 lg:px-8 backdrop-blur-xl dark:border-slate-800/90 dark:bg-[#0B1120]/80 transition-colors">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -245,7 +246,7 @@ export function DashboardShell({
           <div className="flex items-center gap-3">
             <Link
               href="/verify/demo-credential"
-              className="hidden md:inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-brand-600 bg-slate-100/80 px-2.5 py-1.5 rounded-lg border border-slate-200/60 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700 dark:hover:text-brand-400"
+              className="hidden md:inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-brand-600 bg-slate-100/80 px-2.5 py-1.5 rounded-xl border border-slate-200/60 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700 dark:hover:text-brand-400"
             >
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               Public Verification Tool <ExternalLink className="h-3 w-3" />
@@ -264,22 +265,25 @@ export function DashboardShell({
         </header>
 
         {/* Page Content */}
-        <main role="main" className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          {/* Page Header */}
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">{subtitle}</p>
-              )}
+        <main role="main" className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative">
+          <HeroAtmosphere />
+          <div className="relative z-10">
+            {/* Page Header */}
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">{subtitle}</p>
+                )}
+              </div>
+              {actions && <div className="flex items-center gap-2.5">{actions}</div>}
             </div>
-            {actions && <div className="flex items-center gap-2.5">{actions}</div>}
-          </div>
 
-          {/* Main Body Slot */}
-          {children}
+            {/* Main Body Slot */}
+            {children}
+          </div>
         </main>
       </div>
     </div>

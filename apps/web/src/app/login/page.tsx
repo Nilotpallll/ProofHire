@@ -7,6 +7,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { HeroAtmosphere } from "@/components/ui/HeroAtmosphere";
 import {
   ShieldCheck,
   Lock,
@@ -49,67 +50,74 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="relative min-h-screen flex flex-col bg-slate-950 text-slate-100 overflow-hidden">
+      {/* Background Atmosphere */}
+      <HeroAtmosphere />
       <Navbar />
 
-      <main id="main-content" className="flex-1 flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md space-y-8">
+      <main id="main-content" className="relative z-10 flex-1 flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-6">
           {/* Header */}
           <div className="text-center space-y-2">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm mb-2">
-              <ShieldCheck className="h-6 w-6" />
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-600 via-brand-500 to-cyan-400 text-white shadow-glow-brand ring-1 ring-white/20 mb-2">
+              <ShieldCheck className="h-7 w-7" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Sign in to ProofHire
+            <h1 className="text-3xl font-extrabold tracking-tight text-white">
+              Sign in to <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300 bg-clip-text text-transparent">ProofHire</span>
             </h1>
-            <p className="text-xs text-slate-500">
-              Access your decentralized credentials, jobs, and recruitment pipelines
+            <p className="text-xs text-slate-400">
+              Access your decentralized credentials, zero-knowledge proofs, and recruitment pipelines
             </p>
           </div>
 
           {/* Quick Demo Switcher Card for Instant Evaluation */}
-          <div className="rounded-2xl border border-brand-200 bg-brand-50/70 p-4 space-y-3 shadow-subtle">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-brand-900">
-              <Sparkles className="h-4 w-4 text-brand-600" />
-              <span>One-Click Demonstration Logins:</span>
+          <div className="rounded-2xl border border-brand-500/30 bg-gradient-to-b from-brand-950/60 to-slate-900/60 p-4 space-y-3 backdrop-blur-md shadow-glow-brand/20">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-brand-300">
+                <Sparkles className="h-4 w-4 text-brand-400 animate-pulse" />
+                <span>One-Click Demonstration Logins</span>
+              </div>
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                Pre-Configured
+              </span>
             </div>
-            <p className="text-[11px] text-brand-700 leading-relaxed">
-              Click any demo role to instantly sign in and explore the complete portal implementation without typing credentials:
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Click any demo role to instantly sign in and explore the full live portal without manual typing:
             </p>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => handleSeedLogin("STUDENT")}
-                className="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-white border border-brand-200 text-brand-900 font-semibold hover:bg-brand-100/50 shadow-xs transition-colors"
+                className="group flex items-center justify-center gap-1.5 p-2.5 rounded-xl bg-slate-900/80 hover:bg-brand-900/40 border border-slate-700/80 hover:border-brand-500/50 text-slate-200 hover:text-white font-semibold shadow-xs transition-all duration-200"
               >
-                <GraduationCap className="h-4 w-4 text-brand-600" /> Student
+                <GraduationCap className="h-4 w-4 text-brand-400 group-hover:scale-110 transition-transform" /> Student
               </button>
               <button
                 type="button"
                 onClick={() => handleSeedLogin("RECRUITER")}
-                className="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-white border border-brand-200 text-brand-900 font-semibold hover:bg-brand-100/50 shadow-xs transition-colors"
+                className="group flex items-center justify-center gap-1.5 p-2.5 rounded-xl bg-slate-900/80 hover:bg-emerald-900/40 border border-slate-700/80 hover:border-emerald-500/50 text-slate-200 hover:text-white font-semibold shadow-xs transition-all duration-200"
               >
-                <Briefcase className="h-4 w-4 text-brand-600" /> Recruiter
+                <Briefcase className="h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform" /> Recruiter
               </button>
               <button
                 type="button"
                 onClick={() => handleSeedLogin("INSTITUTION")}
-                className="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-white border border-brand-200 text-brand-900 font-semibold hover:bg-brand-100/50 shadow-xs transition-colors"
+                className="group flex items-center justify-center gap-1.5 p-2.5 rounded-xl bg-slate-900/80 hover:bg-purple-900/40 border border-slate-700/80 hover:border-purple-500/50 text-slate-200 hover:text-white font-semibold shadow-xs transition-all duration-200"
               >
-                <Building2 className="h-4 w-4 text-brand-600" /> Institution
+                <Building2 className="h-4 w-4 text-purple-400 group-hover:scale-110 transition-transform" /> Institution
               </button>
               <button
                 type="button"
                 onClick={() => handleSeedLogin("ADMIN")}
-                className="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-white border border-brand-200 text-brand-900 font-semibold hover:bg-brand-100/50 shadow-xs transition-colors"
+                className="group flex items-center justify-center gap-1.5 p-2.5 rounded-xl bg-slate-900/80 hover:bg-amber-900/40 border border-slate-700/80 hover:border-amber-500/50 text-slate-200 hover:text-white font-semibold shadow-xs transition-all duration-200"
               >
-                <ShieldAlert className="h-4 w-4 text-brand-600" /> SuperAdmin
+                <ShieldAlert className="h-4 w-4 text-amber-400 group-hover:scale-110 transition-transform" /> SuperAdmin
               </button>
             </div>
           </div>
 
           {/* Standard Form */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-card space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur-xl p-6 sm:p-8 shadow-luxury space-y-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
                 label="Email address"
@@ -132,7 +140,7 @@ export default function LoginPage() {
               />
 
               {error && (
-                <div className="rounded-lg bg-red-50 p-3 border border-red-200 text-xs text-red-700">
+                <div className="rounded-lg bg-red-950/60 p-3 border border-red-800 text-xs text-red-300">
                   {error}
                 </div>
               )}
@@ -140,16 +148,16 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 variant="primary"
-                className="w-full"
+                className="w-full shadow-glow-brand"
                 isLoading={submitting}
               >
                 Sign In
               </Button>
             </form>
 
-            <div className="text-center text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <div className="text-center text-xs text-slate-400 pt-2 border-t border-slate-800/80">
               Don&apos;t have an account yet?{" "}
-              <Link href="/register" className="font-semibold text-brand-600 hover:text-brand-700">
+              <Link href="/register" className="font-semibold text-brand-400 hover:text-brand-300 transition-colors">
                 Create one now
               </Link>
             </div>

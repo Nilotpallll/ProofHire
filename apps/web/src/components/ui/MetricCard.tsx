@@ -26,49 +26,53 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        "relative rounded-xl border border-slate-200/90 bg-white p-5 shadow-card transition-all hover:shadow-md",
-        "dark:bg-slate-900/90 dark:border-slate-800",
+        "group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 p-5 shadow-card transition-all duration-300",
+        "hover:-translate-y-1 hover:shadow-luxury hover:border-brand-500/40 backdrop-blur-md",
+        "dark:bg-slate-900/80 dark:border-slate-800/80 dark:hover:border-brand-500/50 dark:hover:shadow-glow-brand/20",
         className
       )}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      {/* Ambient hover wash */}
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 via-transparent to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl" />
+
+      <div className="relative z-10 flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
           {title}
         </span>
         {icon && (
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50 border border-slate-100 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 shadow-xs group-hover:scale-110 group-hover:border-brand-500/30 transition-all duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200">
             {icon}
           </div>
         )}
       </div>
 
-      <div className="mt-2.5 flex items-baseline gap-2">
-        <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-sans">
+      <div className="relative z-10 mt-3 flex items-baseline gap-2">
+        <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 font-sans">
           {value}
         </span>
         {change && (
           <span
             className={cn(
-              "inline-flex items-center text-xs font-semibold px-1.5 py-0.5 rounded",
-              trend === "up" && "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/60",
-              trend === "down" && "text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/60",
-              trend === "neutral" && "text-slate-600 bg-slate-100 dark:text-slate-400 dark:bg-slate-800"
+              "inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full",
+              trend === "up" && "text-emerald-700 bg-emerald-50 border border-emerald-200/60 dark:text-emerald-300 dark:bg-emerald-950/70 dark:border-emerald-800",
+              trend === "down" && "text-red-700 bg-red-50 border border-red-200/60 dark:text-red-300 dark:bg-red-950/70 dark:border-red-800",
+              trend === "neutral" && "text-slate-600 bg-slate-100 border border-slate-200/60 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700"
             )}
           >
-            {trend === "up" && <TrendingUp className="mr-0.5 h-3 w-3" />}
-            {trend === "down" && <TrendingDown className="mr-0.5 h-3 w-3" />}
-            {trend === "neutral" && <Minus className="mr-0.5 h-3 w-3" />}
+            {trend === "up" && <TrendingUp className="mr-1 h-3 w-3" />}
+            {trend === "down" && <TrendingDown className="mr-1 h-3 w-3" />}
+            {trend === "neutral" && <Minus className="mr-1 h-3 w-3" />}
             {change}
           </span>
         )}
       </div>
 
       {(subtitle || isDemo) && (
-        <div className="mt-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <span>{subtitle}</span>
+        <div className="relative z-10 mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+          <span className="truncate pr-2">{subtitle}</span>
           {isDemo && (
-            <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 px-1.5 py-0.5 rounded">
-              Verified Data
+            <span className="shrink-0 text-[10px] font-mono text-brand-600 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800/60 px-2 py-0.5 rounded-full">
+              On-Chain Verified
             </span>
           )}
         </div>

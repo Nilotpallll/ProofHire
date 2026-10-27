@@ -7,6 +7,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { HeroAtmosphere } from "@/components/ui/HeroAtmosphere";
 import {
   ShieldCheck,
   Lock,
@@ -63,72 +64,73 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="relative min-h-screen flex flex-col bg-slate-950 text-slate-100 overflow-hidden">
+      <HeroAtmosphere />
       <Navbar />
 
-      <main id="main-content" className="flex-1 flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-lg space-y-8">
+      <main id="main-content" className="relative z-10 flex-1 flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-lg space-y-6">
           <div className="text-center space-y-2">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm mb-2">
-              <ShieldCheck className="h-6 w-6" />
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-600 via-brand-500 to-cyan-400 text-white shadow-glow-brand ring-1 ring-white/20 mb-2">
+              <ShieldCheck className="h-7 w-7" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Create your ProofHire Account
+            <h1 className="text-3xl font-extrabold tracking-tight text-white">
+              Create your <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300 bg-clip-text text-transparent">ProofHire</span> Account
             </h1>
-            <p className="text-xs text-slate-500">
-              Join the decentralized credential verification & recruitment network
+            <p className="text-xs text-slate-400">
+              Join the decentralized credential verification & sovereign identity network
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-card space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur-xl p-6 sm:p-8 shadow-luxury space-y-6">
             {/* Role Selector Tabs */}
             <div className="space-y-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
                 I am registering as:
               </label>
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedRole("STUDENT")}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-semibold transition-all ${
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-semibold transition-all duration-200 ${
                     selectedRole === "STUDENT"
-                      ? "border-brand-600 bg-brand-50/70 text-brand-700 ring-2 ring-brand-500/20"
-                      : "border-slate-200 hover:bg-slate-50 text-slate-600"
+                      ? "border-brand-500 bg-brand-500/20 text-brand-300 ring-2 ring-brand-500/30 shadow-glow-brand/30"
+                      : "border-slate-800 hover:border-slate-700 bg-slate-900/60 hover:bg-slate-800/60 text-slate-400 hover:text-slate-200"
                   }`}
                 >
-                  <GraduationCap className="h-5 w-5 mb-1 text-brand-600" />
+                  <GraduationCap className="h-5 w-5 mb-1.5 text-brand-400" />
                   Student
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedRole("RECRUITER")}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-semibold transition-all ${
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-semibold transition-all duration-200 ${
                     selectedRole === "RECRUITER"
-                      ? "border-brand-600 bg-brand-50/70 text-brand-700 ring-2 ring-brand-500/20"
-                      : "border-slate-200 hover:bg-slate-50 text-slate-600"
+                      ? "border-emerald-500 bg-emerald-500/20 text-emerald-300 ring-2 ring-emerald-500/30 shadow-glow-emerald/30"
+                      : "border-slate-800 hover:border-slate-700 bg-slate-900/60 hover:bg-slate-800/60 text-slate-400 hover:text-slate-200"
                   }`}
                 >
-                  <Briefcase className="h-5 w-5 mb-1 text-brand-600" />
+                  <Briefcase className="h-5 w-5 mb-1.5 text-emerald-400" />
                   Recruiter
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedRole("INSTITUTION")}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-semibold transition-all ${
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-semibold transition-all duration-200 ${
                     selectedRole === "INSTITUTION"
-                      ? "border-brand-600 bg-brand-50/70 text-brand-700 ring-2 ring-brand-500/20"
-                      : "border-slate-200 hover:bg-slate-50 text-slate-600"
+                      ? "border-purple-500 bg-purple-500/20 text-purple-300 ring-2 ring-purple-500/30 shadow-sm"
+                      : "border-slate-800 hover:border-slate-700 bg-slate-900/60 hover:bg-slate-800/60 text-slate-400 hover:text-slate-200"
                   }`}
                 >
-                  <Building2 className="h-5 w-5 mb-1 text-brand-600" />
+                  <Building2 className="h-5 w-5 mb-1.5 text-purple-400" />
                   Institution
                 </button>
               </div>
             </div>
 
             {selectedRole === "INSTITUTION" && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 flex items-start gap-2.5 text-xs text-amber-800">
-                <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="rounded-xl border border-amber-500/30 bg-amber-950/40 p-3.5 flex items-start gap-2.5 text-xs text-amber-200 backdrop-blur-sm">
+                <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
                 <p>
                   Institution accounts require administrative verification of accreditation before on-chain credential issuance permissions are activated.
                 </p>
@@ -202,16 +204,16 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={agreeTerms}
                   onChange={(e) => setAgreeTerms(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                  className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-brand-600 focus:ring-brand-500/40"
                   required
                 />
-                <label htmlFor="agree-terms" className="text-xs text-slate-600">
+                <label htmlFor="agree-terms" className="text-xs text-slate-300">
                   I agree to the ProofHire Terms of Service and Privacy Policy
                 </label>
               </div>
 
               {error && (
-                <div className="rounded-lg bg-red-50 p-3 border border-red-200 text-xs text-red-700">
+                <div className="rounded-lg bg-red-950/60 p-3 border border-red-800 text-xs text-red-300">
                   {error}
                 </div>
               )}
@@ -219,16 +221,16 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 variant="primary"
-                className="w-full"
+                className="w-full shadow-glow-brand"
                 isLoading={submitting}
               >
                 Create Account & Enter Portal
               </Button>
             </form>
 
-            <div className="text-center text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <div className="text-center text-xs text-slate-400 pt-2 border-t border-slate-800/80">
               Already have an account?{" "}
-              <Link href="/login" className="font-semibold text-brand-600 hover:text-brand-700">
+              <Link href="/login" className="font-semibold text-brand-400 hover:text-brand-300 transition-colors">
                 Sign in here
               </Link>
             </div>
