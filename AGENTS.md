@@ -9,11 +9,11 @@ Welcome to the **ProofHire** repository. This document defines the engineering s
 **Tagline:** *"Trust Skills. Verify Credentials. Hire Faster."*
 
 ProofHire is an AI-powered decentralized academic and professional credential verification platform. It solves degree fraud, credential embellishment, and weeks-long background checking delays by uniting:
-1. **Accredited Institutional Issuance** of verifiable cryptographic credentials on Ethereum.
+1. **Accredited Institutional Issuance** of verifiable cryptographic credentials on Ethereum and EVM-compatible networks.
 2. **Student-Owned Sovereign Profiles** and portable credentials.
 3. **AI Resume Parsing & Match Scoring** with cryptographic verification boosts.
-4. **Recruiter Hiring Pipelines** with instant background verification.
-5. **On-Chain Public Verification** and revocation auditability.
+4. **Recruiter Hiring Pipelines** with instant background verification and unverified claim audits.
+5. **On-Chain Public Verification** and permanent revocation auditability.
 
 ---
 
@@ -24,9 +24,9 @@ ProofHire/
 ├── apps/
 │   └── web/              # Next.js App Router (React 19, TypeScript, Tailwind CSS, Lucide icons)
 ├── services/
-│   ├── api/              # NestJS REST API (PostgreSQL, Prisma ORM, JWT Auth, Swagger OpenAPI)
+│   ├── api/              # NestJS REST API (PostgreSQL, Prisma ORM, JWT Auth, Swagger OpenAPI, Ethers.js)
 │   └── ai/               # FastAPI AI Microservice (Python 3.12/3.13, Pydantic, Uvicorn)
-├── blockchain/           # Hardhat Ethereum contracts (Solidity 0.8.20, Ethers.js)
+├── blockchain/           # Hardhat Ethereum contracts (Solidity 0.8.20, Ethers.js, OpenZeppelin)
 ├── packages/
 │   ├── types/            # Shared TypeScript domain models, enums, DTOs
 │   ├── config/           # Shared TypeScript and ESLint configurations
@@ -35,7 +35,7 @@ ProofHire/
 │   ├── architecture/     # System overview, decisions, DB schema, accessibility
 │   ├── api/              # REST OpenAPI and Swagger specs
 │   ├── blockchain/       # Smart contract ABI, addresses, deployment guides
-│   └── ai/               # Model weights, NLP extraction pipelines
+│   └── ai/               # Model weights, NLP extraction pipelines, scoring rubrics
 └── docker/               # Container compose recipes for local orchestration
 ```
 
@@ -47,11 +47,12 @@ ProofHire/
 2. **Preserve Monorepo Integrity:** Do not overwrite existing working code merely to replace it with a different scaffold.
 3. **Never Hardcode Secrets:** Keep private keys, database passwords, JWT secrets, and API tokens strictly inside `.env` files (never commit real secrets to Git).
 4. **Role Boundary Enforcement:** Never allow a user to self-assign `ADMIN` role through public registration endpoints. All `INSTITUTION` registrations default to `PENDING_APPROVAL` status until vetted.
-5. **No Fake Blockchain Truth:** Do not treat PostgreSQL as the sole source of blockchain truth. Public verification checks verify the cryptographic Keccak-256 hash against the Ethereum smart contract registry.
+5. **No Fake Blockchain Truth:** Do not treat PostgreSQL as the sole source of blockchain truth. Public verification checks verify the cryptographic Keccak-256 hash against the Ethereum smart contract registry (`CredentialRegistry.sol`).
+6. **Explicit Verification Taxonomy:** Always return explicit verification codes (`VERIFIED`, `REVOKED`, `DOCUMENT_MISMATCH`, `NOT_FOUND`, `ISSUER_INVALID`, `UNAVAILABLE`). Never collapse failure modes into a generic invalid error.
 
 ---
 
-## 4. How to Run Each Service
+## 4. How to Run Each Service & Execute Test Suites
 
 ### Prerequisites
 - Node.js: `v22.x LTS` (Current: v22.23.2)
@@ -59,18 +60,25 @@ ProofHire/
 - Python: `3.12+` (Current: 3.13.2)
 - PostgreSQL (for local database persistence)
 
-### 1. Web Frontend (`apps/web`)
+### 1. Smart Contracts & Hardhat (`blockchain`)
 ```bash
-# From repository root
-npm run dev --workspace=apps/web
-# Runs on http://localhost:3000
+# Compile contracts
+npm run compile --workspace=@proofhire/blockchain
+
+# Run unit test suite (23 passing tests)
+npm run test --workspace=@proofhire/blockchain
+
+# Deploy locally and export JSON configs
+npx hardhat run scripts/deploy.ts --network hardhat --workspace=@proofhire/blockchain
 ```
 
 ### 2. NestJS Core API (`services/api`)
 ```bash
-# Start NestJS backend
+# Run unit tests
+npm run test --workspace=@proofhire/api
+
+# Start NestJS backend (Port 4000)
 npm run start:dev --workspace=services/api
-# Runs on http://localhost:4000/api
 # Swagger docs at http://localhost:4000/api/docs
 ```
 
@@ -80,17 +88,22 @@ cd services/ai
 python -m venv .venv
 # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-# Runs on http://localhost:8000
+
+# Run AI unit tests
+python -m unittest app/tests/test_ai_suite.py
+
+# Run FastAPI server (Port 8000)
+uvicorn app.main:app --reload --port 8000
 # Interactive docs at http://localhost:8000/docs
 ```
 
-### 4. Smart Contracts & Hardhat (`blockchain`)
+### 4. Web Frontend (`apps/web`)
 ```bash
-# Compile contracts
-npm run compile --workspace=blockchain
-# Run unit test suite
-npm run test --workspace=blockchain
+# Run Next.js frontend dev server (Port 3000)
+npm run dev --workspace=apps/web
+
+# Build production bundle
+npm run build --workspace=apps/web
 ```
 
 ---

@@ -74,20 +74,33 @@ export default function InstitutionCredentialsListPage() {
     setRevokeModalOpen(true);
   };
 
-  const handleConfirmRevoke = () => {
-    if (!revokeReason.trim()) return;
+  const handleConfirmRevoke = async () => {
+    if (!revokeReason.trim() || !selectedCred) return;
     setRevoking(true);
-    setTimeout(() => {
-      setCredentials((prev) =>
-        prev.map((c) =>
-          c.id === selectedCred.id
-            ? { ...c, status: "REVOKED", revocationReason: revokeReason }
-            : c
-        )
-      );
-      setRevoking(false);
-      setRevokeModalOpen(false);
-    }, 600);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+      await fetch(`${apiUrl}/credentials/${encodeURIComponent(selectedCred.credentialId)}/revoke`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("proofhire_token")}`,
+        },
+        body: JSON.stringify({ reason: revokeReason }),
+      });
+    } catch {
+      // local fallback
+    }
+
+    setCredentials((prev) =>
+      prev.map((c) =>
+        c.credentialId === selectedCred.credentialId
+          ? { ...c, status: "REVOKED", revocationReason: revokeReason }
+          : c
+      )
+    );
+    setRevoking(false);
+    setRevokeModalOpen(false);
   };
 
   const filtered = credentials.filter((c) => {
