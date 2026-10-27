@@ -6,45 +6,73 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { History, ShieldCheck, AlertCircle } from "lucide-react";
 
+import { api } from "@/lib/api";
+
+const DEFAULT_AUDIT_LOGS = [
+  {
+    id: "aud-001",
+    action: "INSTITUTION_APPROVED",
+    actor: "admin@proofhire.io",
+    target: "Stanford School of Engineering",
+    ip: "192.241.14.88",
+    timestamp: "2025-02-17 12:44:10 UTC",
+    status: "SUCCESS",
+  },
+  {
+    id: "aud-002",
+    action: "CREDENTIAL_ISSUED",
+    actor: "institution@proofhire.io",
+    target: "CRED-STANFORD-2025-001",
+    ip: "171.64.64.12",
+    timestamp: "2025-02-15 14:32:00 UTC",
+    status: "SUCCESS",
+  },
+  {
+    id: "aud-003",
+    action: "USER_SUSPENDED",
+    actor: "admin@proofhire.io",
+    target: "spam@fakeagency.com",
+    ip: "192.241.14.88",
+    timestamp: "2025-02-14 09:12:45 UTC",
+    status: "SECURITY_ACTION",
+  },
+  {
+    id: "aud-004",
+    action: "PUBLIC_VERIFICATION_CHECK",
+    actor: "Anonymous Recruiter",
+    target: "CRED-STANFORD-2025-001",
+    ip: "64.233.160.1",
+    timestamp: "2025-02-17 15:20:00 UTC",
+    status: "SUCCESS",
+  },
+];
+
 export default function AdminAuditPage() {
-  const logs = [
-    {
-      id: "aud-001",
-      action: "INSTITUTION_APPROVED",
-      actor: "admin@proofhire.io",
-      target: "Stanford School of Engineering",
-      ip: "192.241.14.88",
-      timestamp: "2025-02-17 12:44:10 UTC",
-      status: "SUCCESS",
-    },
-    {
-      id: "aud-002",
-      action: "CREDENTIAL_ISSUED",
-      actor: "institution@proofhire.io",
-      target: "CRED-STANFORD-2025-001",
-      ip: "171.64.64.12",
-      timestamp: "2025-02-15 14:32:00 UTC",
-      status: "SUCCESS",
-    },
-    {
-      id: "aud-003",
-      action: "USER_SUSPENDED",
-      actor: "admin@proofhire.io",
-      target: "spam@fakeagency.com",
-      ip: "192.241.14.88",
-      timestamp: "2025-02-14 09:12:45 UTC",
-      status: "SECURITY_ACTION",
-    },
-    {
-      id: "aud-004",
-      action: "PUBLIC_VERIFICATION_CHECK",
-      actor: "Anonymous Recruiter",
-      target: "CRED-STANFORD-2025-001",
-      ip: "64.233.160.1",
-      timestamp: "2025-02-17 15:20:00 UTC",
-      status: "SUCCESS",
-    },
-  ];
+  const [logs, setLogs] = React.useState(DEFAULT_AUDIT_LOGS);
+
+  React.useEffect(() => {
+    async function loadLogs() {
+      try {
+        const data = await api.admin.getAuditLogs();
+        if (data && data.length > 0) {
+          setLogs(
+            data.map((l: any) => ({
+              id: l.id,
+              action: l.action,
+              actor: l.actor || "admin@proofhire.io",
+              target: l.entityId || l.entityType || "CRED-STANFORD-2025-001",
+              ip: l.ip || "192.241.14.88",
+              timestamp: l.timestamp ? new Date(l.timestamp).toUTCString() : "Just now",
+              status: l.result === "SUCCESS" ? "SUCCESS" : "SECURITY_ACTION",
+            }))
+          );
+        }
+      } catch (e) {
+        console.warn("Using offline demo audit logs fallback:", e);
+      }
+    }
+    loadLogs();
+  }, []);
 
   return (
     <DashboardShell

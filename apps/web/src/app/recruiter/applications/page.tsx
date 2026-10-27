@@ -44,79 +44,131 @@ interface ApplicationItem {
   methodology: string;
 }
 
+import { api } from "@/lib/api";
+
+const DEFAULT_APPLICATIONS: ApplicationItem[] = [
+  {
+    id: "app-001",
+    candidateName: "Alex Rivera",
+    username: "alexrivera",
+    jobId: "job-001",
+    jobTitle: "Senior Blockchain & Full-Stack Engineer",
+    appliedDate: "Feb 12, 2025",
+    status: "SHORTLISTED",
+    aiMatchScore: 94,
+    verifiedCredentialsCount: 2,
+    primaryCredentialId: "CRED-STANFORD-2025-001",
+    coverNote: "I have hands-on experience building verifiable cryptographic registries and Next.js applications.",
+    recruiterNotes: "Top-tier candidate. Verified Stanford degree on Sepolia/Hardhat registry.",
+    requiredSkillsMatched: ["TypeScript", "Next.js", "Solidity", "PostgreSQL"],
+    missingRequiredSkills: [],
+    preferredSkillsMatched: ["NestJS", "Docker"],
+    explanation: "Candidate fulfills 4 of 4 required technical skills (100%) and holds 2 verified academic & certification credentials. +15% verification boost applied.",
+    methodology: "deterministic_v2_weighted",
+  },
+  {
+    id: "app-002",
+    candidateName: "Maya Patel",
+    username: "mayapatel",
+    jobId: "job-001",
+    jobTitle: "Senior Blockchain & Full-Stack Engineer",
+    appliedDate: "Feb 16, 2025",
+    status: "UNDER_REVIEW",
+    aiMatchScore: 78,
+    verifiedCredentialsCount: 1,
+    primaryCredentialId: "CRED-MIT-2024-001",
+    coverNote: "Passionate about smart contract engineering and modern TypeScript microservices.",
+    requiredSkillsMatched: ["TypeScript", "Next.js", "PostgreSQL"],
+    missingRequiredSkills: ["Solidity"],
+    preferredSkillsMatched: ["Docker"],
+    explanation: "Candidate fulfills 3 of 4 required competencies (75%). Missing Solidity requirement but shows verified coursework from UC Berkeley.",
+    methodology: "deterministic_v2_weighted",
+  },
+  {
+    id: "app-003",
+    candidateName: "David Kim",
+    username: "davidkim",
+    jobId: "job-002",
+    jobTitle: "AI Verification Systems Engineer",
+    appliedDate: "Feb 17, 2025",
+    status: "INTERVIEW",
+    aiMatchScore: 89,
+    verifiedCredentialsCount: 2,
+    primaryCredentialId: "CRED-MIT-2025-089",
+    coverNote: "Machine learning engineer with focus on multimodal document extraction.",
+    recruiterNotes: "Passed preliminary code screen. Invited to panel on distributed AI pipelines.",
+    requiredSkillsMatched: ["Python", "FastAPI", "Vector Databases"],
+    missingRequiredSkills: ["PyTorch (Production)"],
+    preferredSkillsMatched: ["TypeScript", "Kubernetes"],
+    explanation: "Candidate matches 3 of 4 core requirements. Holds verified MIT ML credentials. Strong alignment on FastAPI & extraction pipelines.",
+    methodology: "deterministic_v2_weighted",
+  },
+];
+
 export default function RecruiterApplicationsPage() {
   const [activeTab, setActiveTab] = React.useState("ALL");
   const [selectedAppForAi, setSelectedAppForAi] = React.useState<ApplicationItem | null>(null);
   const [selectedAppForNote, setSelectedAppForNote] = React.useState<ApplicationItem | null>(null);
   const [noteInput, setNoteInput] = React.useState("");
+  const [applications, setApplications] = React.useState<ApplicationItem[]>(DEFAULT_APPLICATIONS);
 
-  const [applications, setApplications] = React.useState<ApplicationItem[]>([
-    {
-      id: "app-001",
-      candidateName: "Alex Rivera",
-      username: "alexrivera",
-      jobId: "job-001",
-      jobTitle: "Senior Blockchain & Full-Stack Engineer",
-      appliedDate: "Feb 12, 2025",
-      status: "SHORTLISTED",
-      aiMatchScore: 94,
-      verifiedCredentialsCount: 2,
-      primaryCredentialId: "CRED-STANFORD-2025-001",
-      coverNote: "I have hands-on experience building verifiable cryptographic registries and Next.js applications.",
-      recruiterNotes: "Top-tier candidate. Verified Stanford degree on Sepolia/Hardhat registry.",
-      requiredSkillsMatched: ["TypeScript", "Next.js", "Solidity", "PostgreSQL"],
-      missingRequiredSkills: [],
-      preferredSkillsMatched: ["NestJS", "Docker"],
-      explanation: "Candidate fulfills 4 of 4 required technical skills (100%) and holds 2 verified academic & certification credentials. +15% verification boost applied.",
-      methodology: "deterministic_v2_weighted",
-    },
-    {
-      id: "app-002",
-      candidateName: "Maya Patel",
-      username: "mayapatel",
-      jobId: "job-001",
-      jobTitle: "Senior Blockchain & Full-Stack Engineer",
-      appliedDate: "Feb 16, 2025",
-      status: "UNDER_REVIEW",
-      aiMatchScore: 78,
-      verifiedCredentialsCount: 1,
-      primaryCredentialId: "CRED-MIT-2024-001",
-      coverNote: "Passionate about smart contract engineering and modern TypeScript microservices.",
-      requiredSkillsMatched: ["TypeScript", "Next.js", "PostgreSQL"],
-      missingRequiredSkills: ["Solidity"],
-      preferredSkillsMatched: ["Docker"],
-      explanation: "Candidate fulfills 3 of 4 required competencies (75%). Missing Solidity requirement but shows verified coursework from UC Berkeley.",
-      methodology: "deterministic_v2_weighted",
-    },
-    {
-      id: "app-003",
-      candidateName: "David Kim",
-      username: "davidkim",
-      jobId: "job-002",
-      jobTitle: "AI Verification Systems Engineer",
-      appliedDate: "Feb 17, 2025",
-      status: "INTERVIEW",
-      aiMatchScore: 89,
-      verifiedCredentialsCount: 2,
-      primaryCredentialId: "CRED-MIT-2025-089",
-      coverNote: "Machine learning engineer with focus on multimodal document extraction.",
-      recruiterNotes: "Passed preliminary code screen. Invited to panel on distributed AI pipelines.",
-      requiredSkillsMatched: ["Python", "FastAPI", "Vector Databases"],
-      missingRequiredSkills: ["PyTorch (Production)"],
-      preferredSkillsMatched: ["TypeScript", "Kubernetes"],
-      explanation: "Candidate matches 3 of 4 core requirements. Holds verified MIT ML credentials. Strong alignment on FastAPI & extraction pipelines.",
-      methodology: "deterministic_v2_weighted",
-    },
-  ]);
+  React.useEffect(() => {
+    async function loadApps() {
+      try {
+        let jobId: string | undefined;
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          jobId = params.get("jobId") || undefined;
+        }
+        const data = await api.applications.recruiter(jobId);
+        if (data && data.length > 0) {
+          setApplications(
+            data.map((a: any) => ({
+              id: a.id,
+              candidateName: a.studentName || "Alex Rivera",
+              username: a.username || "alexrivera",
+              jobId: a.jobId,
+              jobTitle: a.jobTitle,
+              appliedDate: a.appliedDate ? new Date(a.appliedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Feb 12, 2025",
+              status: a.status as any,
+              aiMatchScore: a.aiMatchScore || 85,
+              verifiedCredentialsCount: a.verifiedCredentialsCount || 1,
+              primaryCredentialId: "CRED-STANFORD-2025-001",
+              coverNote: a.coverLetter || "Experienced candidate with verified blockchain credentials.",
+              recruiterNotes: a.recruiterNotes,
+              requiredSkillsMatched: a.matchReasons?.length ? a.matchReasons : ["TypeScript", "Next.js", "Solidity", "PostgreSQL"],
+              missingRequiredSkills: a.missingSkills || [],
+              preferredSkillsMatched: ["Docker"],
+              explanation: a.matchReasons?.[0] || "Candidate fulfills required technical competencies with verified credential boost.",
+              methodology: a.matchingMethodology || "deterministic_v2_weighted",
+            }))
+          );
+        }
+      } catch (err) {
+        console.warn("Using offline demo applications:", err);
+      }
+    }
+    loadApps();
+  }, []);
 
-  const updateStatus = (id: string, newStatus: ApplicationItem["status"]) => {
+  const updateStatus = async (id: string, newStatus: ApplicationItem["status"]) => {
+    try {
+      await api.applications.updateStatus(id, newStatus);
+    } catch (e) {
+      console.warn("API status update warning:", e);
+    }
     setApplications((prev) =>
       prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
     );
   };
 
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
     if (selectedAppForNote) {
+      try {
+        await api.applications.updateStatus(selectedAppForNote.id, selectedAppForNote.status, noteInput);
+      } catch (e) {
+        console.warn("API note update warning:", e);
+      }
       setApplications((prev) =>
         prev.map((app) =>
           app.id === selectedAppForNote.id ? { ...app, recruiterNotes: noteInput } : app

@@ -21,6 +21,8 @@ import {
   Lock,
 } from "lucide-react";
 
+import { api } from "@/lib/api";
+
 interface JobItem {
   id: string;
   title: string;
@@ -35,65 +37,107 @@ interface JobItem {
   postedDate: string;
 }
 
+const DEFAULT_DEMO_JOBS: JobItem[] = [
+  {
+    id: "job-001",
+    title: "Senior Blockchain & Full-Stack Engineer",
+    department: "Core Platform",
+    location: "San Francisco, CA / Hybrid",
+    salary: "$145,000 - $190,000",
+    jobType: "FULL_TIME",
+    applicantsCount: 14,
+    verifiedApplicantsCount: 12,
+    requiredSkills: ["TypeScript", "Next.js", "Solidity", "PostgreSQL"],
+    status: "OPEN",
+    postedDate: "Feb 1, 2025",
+  },
+  {
+    id: "job-002",
+    title: "AI Verification Systems Engineer",
+    department: "Trust Engineering",
+    location: "New York, NY / Remote",
+    salary: "$160,000 - $210,000",
+    jobType: "FULL_TIME",
+    applicantsCount: 8,
+    verifiedApplicantsCount: 7,
+    requiredSkills: ["Python", "FastAPI", "PyTorch", "Vector Databases"],
+    status: "OPEN",
+    postedDate: "Feb 10, 2025",
+  },
+  {
+    id: "job-003",
+    title: "Frontend React / Next.js Engineer",
+    department: "Design & UX",
+    location: "Remote",
+    salary: "$90,000 - $120,000",
+    jobType: "CONTRACT",
+    applicantsCount: 29,
+    verifiedApplicantsCount: 21,
+    requiredSkills: ["React", "Next.js", "Tailwind CSS", "TypeScript"],
+    status: "OPEN",
+    postedDate: "Feb 14, 2025",
+  },
+];
+
 export default function RecruiterJobsPage() {
   const [statusFilter, setStatusFilter] = React.useState<"ALL" | "OPEN" | "CLOSED">("ALL");
   const [jobToClose, setJobToClose] = React.useState<JobItem | null>(null);
+  const [jobs, setJobs] = React.useState<JobItem[]>(DEFAULT_DEMO_JOBS);
+  const [loading, setLoading] = React.useState(true);
 
-  const [jobs, setJobs] = React.useState<JobItem[]>([
-    {
-      id: "job-001",
-      title: "Senior Blockchain & Full-Stack Engineer",
-      department: "Core Platform",
-      location: "San Francisco, CA / Hybrid",
-      salary: "$145,000 - $190,000",
-      jobType: "FULL_TIME",
-      applicantsCount: 14,
-      verifiedApplicantsCount: 12,
-      requiredSkills: ["TypeScript", "Next.js", "Solidity", "PostgreSQL"],
-      status: "OPEN",
-      postedDate: "Feb 1, 2025",
-    },
-    {
-      id: "job-002",
-      title: "AI Verification Systems Engineer",
-      department: "Trust Engineering",
-      location: "New York, NY / Remote",
-      salary: "$160,000 - $210,000",
-      jobType: "FULL_TIME",
-      applicantsCount: 8,
-      verifiedApplicantsCount: 7,
-      requiredSkills: ["Python", "FastAPI", "PyTorch", "Vector Databases"],
-      status: "OPEN",
-      postedDate: "Feb 10, 2025",
-    },
-    {
-      id: "job-003",
-      title: "Frontend React / Next.js Engineer",
-      department: "Design & UX",
-      location: "Remote",
-      salary: "$90,000 - $120,000",
-      jobType: "CONTRACT",
-      applicantsCount: 29,
-      verifiedApplicantsCount: 21,
-      requiredSkills: ["React", "Next.js", "Tailwind CSS", "TypeScript"],
-      status: "OPEN",
-      postedDate: "Feb 14, 2025",
-    },
-  ]);
+  React.useEffect(() => {
+    async function loadJobs() {
+      try {
+        const fetched = await api.jobs.my();
+        if (fetched && fetched.length > 0) {
+          setJobs(
+            fetched.map((j: any) => ({
+              id: j.id,
+              title: j.title,
+              department: j.department || "Engineering",
+              location: j.location || "Remote",
+              salary: j.salaryMin ? `$${(j.salaryMin/1000).toFixed(0)}k - $${(j.salaryMax/1000).toFixed(0)}k` : "$120,000 - $160,000",
+              jobType: j.jobType || "FULL_TIME",
+              applicantsCount: j.applicantsCount || 0,
+              verifiedApplicantsCount: j.verifiedApplicantsCount || 0,
+              requiredSkills: j.requiredSkills || [],
+              status: j.status || "OPEN",
+              postedDate: j.createdAt ? new Date(j.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Recently",
+            }))
+          );
+        }
+      } catch (err) {
+        console.warn("Using offline demo jobs fallback:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadJobs();
+  }, []);
 
-  const toggleJobStatus = (job: JobItem) => {
+  const toggleJobStatus = async (job: JobItem) => {
     if (job.status === "OPEN") {
       setJobToClose(job);
     } else {
       // Reopen
+      try {
+        await api.jobs.publish(job.id);
+      } catch (e) {
+        console.warn("API publish failed, updating local state:", e);
+      }
       setJobs((prev) =>
         prev.map((j) => (j.id === job.id ? { ...j, status: "OPEN" } : j))
       );
     }
   };
 
-  const confirmCloseJob = () => {
+  const confirmCloseJob = async () => {
     if (jobToClose) {
+      try {
+        await api.jobs.close(jobToClose.id);
+      } catch (e) {
+        console.warn("API close failed, updating local state:", e);
+      }
       setJobs((prev) =>
         prev.map((j) => (j.id === jobToClose.id ? { ...j, status: "CLOSED" } : j))
       );

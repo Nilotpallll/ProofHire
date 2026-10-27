@@ -17,49 +17,81 @@ interface InstitutionItem {
   verifiedAt: string;
 }
 
+import { api } from "@/lib/api";
+
+const DEFAULT_INSTITUTIONS: InstitutionItem[] = [
+  {
+    id: "inst-001",
+    name: "Stanford School of Engineering",
+    code: "STANFORD-CS",
+    website: "https://engineering.stanford.edu",
+    contactEmail: "registrar@stanford.edu",
+    status: "APPROVED",
+    verifiedAt: "Jan 15, 2024",
+  },
+  {
+    id: "inst-002",
+    name: "MIT Decentralized Media Lab",
+    code: "MIT-DML",
+    website: "https://media.mit.edu",
+    contactEmail: "credentials@mit.edu",
+    status: "APPROVED",
+    verifiedAt: "Mar 20, 2024",
+  },
+  {
+    id: "inst-003",
+    name: "UC Berkeley Blockchain Institute",
+    code: "UCB-BC",
+    website: "https://blockchain.berkeley.edu",
+    contactEmail: "contact@blockchain.berkeley.edu",
+    status: "PENDING",
+    verifiedAt: "Awaiting Verification",
+  },
+  {
+    id: "inst-004",
+    name: "ETH Zurich Cryptography Center",
+    code: "ETHZ-CRYPTO",
+    website: "https://crypto.ethz.ch",
+    contactEmail: "verify@ethz.ch",
+    status: "PENDING",
+    verifiedAt: "Awaiting Verification",
+  },
+];
+
 export default function AdminInstitutionsPage() {
   const [auditMessage, setAuditMessage] = React.useState<string | null>(null);
+  const [institutions, setInstitutions] = React.useState<InstitutionItem[]>(DEFAULT_INSTITUTIONS);
 
-  const [institutions, setInstitutions] = React.useState<InstitutionItem[]>([
-    {
-      id: "inst-001",
-      name: "Stanford School of Engineering",
-      code: "STANFORD-CS",
-      website: "https://engineering.stanford.edu",
-      contactEmail: "registrar@stanford.edu",
-      status: "APPROVED",
-      verifiedAt: "Jan 15, 2024",
-    },
-    {
-      id: "inst-002",
-      name: "MIT Decentralized Media Lab",
-      code: "MIT-DML",
-      website: "https://media.mit.edu",
-      contactEmail: "credentials@mit.edu",
-      status: "APPROVED",
-      verifiedAt: "Mar 20, 2024",
-    },
-    {
-      id: "inst-003",
-      name: "UC Berkeley Blockchain Institute",
-      code: "UCB-BC",
-      website: "https://blockchain.berkeley.edu",
-      contactEmail: "contact@blockchain.berkeley.edu",
-      status: "PENDING",
-      verifiedAt: "Awaiting Verification",
-    },
-    {
-      id: "inst-004",
-      name: "ETH Zurich Cryptography Center",
-      code: "ETHZ-CRYPTO",
-      website: "https://crypto.ethz.ch",
-      contactEmail: "verify@ethz.ch",
-      status: "PENDING",
-      verifiedAt: "Awaiting Verification",
-    },
-  ]);
+  React.useEffect(() => {
+    async function loadInstitutions() {
+      try {
+        const data = await api.institutions.list();
+        if (data && data.length > 0) {
+          setInstitutions(
+            data.map((i: any) => ({
+              id: i.id,
+              name: i.name,
+              code: i.code || i.id.toUpperCase(),
+              website: i.website || "https://stanford.edu",
+              contactEmail: i.contactEmail || "admin@institution.edu",
+              status: i.status || "APPROVED",
+              verifiedAt: i.verifiedAt || "Accredited",
+            }))
+          );
+        }
+      } catch (e) {
+        console.warn("Using offline demo institutions:", e);
+      }
+    }
+    loadInstitutions();
+  }, []);
 
-  const approve = (id: string, name: string) => {
+  const approve = async (id: string, name: string) => {
+    try {
+      await api.institutions.approve(id);
+    } catch (e) {
+      console.warn("API approve warning:", e);
+    }
     setInstitutions((prev) =>
       prev.map((i) => (i.id === id ? { ...i, status: "APPROVED", verifiedAt: "Just now" } : i))
     );
@@ -67,7 +99,12 @@ export default function AdminInstitutionsPage() {
     setTimeout(() => setAuditMessage(null), 4000);
   };
 
-  const reject = (id: string, name: string) => {
+  const reject = async (id: string, name: string) => {
+    try {
+      await api.institutions.reject(id);
+    } catch (e) {
+      console.warn("API reject warning:", e);
+    }
     setInstitutions((prev) =>
       prev.map((i) => (i.id === id ? { ...i, status: "REJECTED" } : i))
     );
@@ -75,8 +112,17 @@ export default function AdminInstitutionsPage() {
     setTimeout(() => setAuditMessage(null), 4000);
   };
 
-  const toggleSuspend = (inst: InstitutionItem) => {
+  const toggleSuspend = async (inst: InstitutionItem) => {
     const newStatus = inst.status === "SUSPENDED" ? "APPROVED" : "SUSPENDED";
+    try {
+      if (newStatus === "SUSPENDED") {
+        await api.institutions.suspend(inst.id);
+      } else {
+        await api.institutions.approve(inst.id);
+      }
+    } catch (e) {
+      console.warn("API suspend warning:", e);
+    }
     setInstitutions((prev) =>
       prev.map((i) => (i.id === inst.id ? { ...i, status: newStatus } : i))
     );

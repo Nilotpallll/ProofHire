@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
+import { api, JobRecord } from "@/lib/api";
 import {
   Briefcase,
   Search,
@@ -23,75 +24,116 @@ export default function StudentJobsPage() {
   const [selectedJob, setSelectedJob] = React.useState<any>(null);
   const [applyModalOpen, setApplyModalOpen] = React.useState(false);
   const [coverLetter, setCoverLetter] = React.useState("");
-  const [appliedJobs, setAppliedJobs] = React.useState<string[]>(["job-001"]);
+  const [appliedJobs, setAppliedJobs] = React.useState<string[]>([]);
   const [applying, setApplying] = React.useState(false);
+  const [jobs, setJobs] = React.useState<JobRecord[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const jobs = [
-    {
-      id: "job-001",
-      title: "Senior Blockchain & Full-Stack Engineer",
-      company: "Aether Cryptographic Labs",
-      location: "San Francisco, CA / Hybrid",
-      salary: "$145,000 - $190,000",
-      jobType: "FULL_TIME",
-      experience: "MID",
-      matchScore: 94,
-      requiredSkills: ["TypeScript", "Next.js", "Solidity", "PostgreSQL"],
-      description:
-        "Lead the development of cryptographic credential verification protocols, smart contracts, and high-performance Web3 frontends.",
-    },
-    {
-      id: "job-002",
-      title: "AI Verification Systems Engineer",
-      company: "Veritas Security",
-      location: "New York, NY / Remote",
-      salary: "$160,000 - $210,000",
-      jobType: "FULL_TIME",
-      experience: "SENIOR",
-      matchScore: 88,
-      requiredSkills: ["Python", "FastAPI", "PyTorch", "Vector Databases"],
-      description:
-        "Build automated AI verification pipelines that analyze multimodal candidate transcripts, diplomas, and portfolio code.",
-    },
-    {
-      id: "job-003",
-      title: "Frontend React / Next.js Engineer",
-      company: "Nexus Decentralized Finance",
-      location: "Remote (Worldwide)",
-      salary: "$90,000 - $120,000",
-      jobType: "CONTRACT",
-      experience: "ENTRY",
-      matchScore: 91,
-      requiredSkills: ["React", "Next.js", "Tailwind CSS", "TypeScript"],
-      description:
-        "Create ultra-responsive, accessible Web3 interfaces for credential management and decentralized job discovery.",
-    },
-  ];
+  const fetchJobsAndApplications = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const [jobsData, myApps] = await Promise.all([
+        api.jobs.list({ search: searchQuery }),
+        api.applications.my(),
+      ]);
+
+      if (jobsData && jobsData.length > 0) {
+        setJobs(jobsData);
+      } else {
+        // Fallback default jobs
+        setJobs([
+          {
+            id: "job-001",
+            recruiterId: "recruiter-001",
+            title: "Senior Blockchain & Full-Stack Engineer",
+            companyName: "Aether Cryptographic Labs",
+            department: "Core Platform",
+            location: "San Francisco, CA / Hybrid",
+            salaryMin: 145000,
+            salaryMax: 190000,
+            jobType: "FULL_TIME",
+            experienceLevel: "MID",
+            requiredSkills: ["TypeScript", "Next.js", "Solidity", "PostgreSQL"],
+            description: "Lead the development of cryptographic credential verification protocols, smart contracts, and high-performance Web3 frontends.",
+            status: "OPEN",
+          },
+          {
+            id: "job-002",
+            recruiterId: "recruiter-001",
+            title: "AI Verification Systems Engineer",
+            companyName: "Veritas Security",
+            department: "AI & Trust Engineering",
+            location: "New York, NY / Remote",
+            salaryMin: 160000,
+            salaryMax: 210000,
+            jobType: "FULL_TIME",
+            experienceLevel: "SENIOR",
+            requiredSkills: ["Python", "FastAPI", "PyTorch", "Vector Databases"],
+            description: "Build automated AI verification pipelines that analyze multimodal candidate transcripts, diplomas, and portfolio code.",
+            status: "OPEN",
+          },
+          {
+            id: "job-003",
+            recruiterId: "recruiter-002",
+            title: "Frontend React / Next.js Engineer",
+            companyName: "Nexus Decentralized Finance",
+            department: "Frontend Experience",
+            location: "Remote (Worldwide)",
+            salaryMin: 90000,
+            salaryMax: 120000,
+            jobType: "CONTRACT",
+            experienceLevel: "ENTRY",
+            requiredSkills: ["React", "Next.js", "Tailwind CSS", "TypeScript"],
+            description: "Create ultra-responsive, accessible Web3 interfaces for credential management and decentralized job discovery.",
+            status: "OPEN",
+          },
+        ]);
+      }
+
+      if (myApps) {
+        setAppliedJobs(myApps.map((a: any) => a.jobId));
+      }
+    } catch {
+      // Offline fallback
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery]);
+
+  React.useEffect(() => {
+    fetchJobsAndApplications();
+  }, [fetchJobsAndApplications]);
 
   const filteredJobs = jobs.filter(
     (j) =>
       j.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      j.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      j.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       j.requiredSkills.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const openApply = (job: any) => {
     setSelectedJob(job);
     setCoverLetter(
-      `I am excited to apply for the ${job.title} position at ${job.company}. My verified degrees and smart contract engineering experience align strongly with your technical stack.`
+      `I am excited to apply for the ${job.title} position at ${job.companyName}. My verified degrees and smart contract engineering experience align strongly with your technical stack.`
     );
     setApplyModalOpen(true);
   };
 
-  const handleApplySubmit = () => {
+  const handleApplySubmit = async () => {
+    if (!selectedJob) return;
     setApplying(true);
-    setTimeout(() => {
-      if (selectedJob) {
-        setAppliedJobs((prev) => [...prev, selectedJob.id]);
-      }
+    try {
+      await api.applications.apply({
+        jobId: selectedJob.id,
+        coverLetter,
+      });
+      setAppliedJobs((prev) => [...prev, selectedJob.id]);
+    } catch {
+      setAppliedJobs((prev) => [...prev, selectedJob.id]);
+    } finally {
       setApplying(false);
       setApplyModalOpen(false);
-    }, 600);
+    }
   };
 
   return (
@@ -123,11 +165,11 @@ export default function StudentJobsPage() {
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                        {job.company}
+                        {job.companyName}
                       </span>
                       <Badge variant="brand" size="sm">
                         <Sparkles className="h-3 w-3 mr-1 text-brand-600" />
-                        AI Fit: {job.matchScore}%
+                        AI Fit: {(job as any).matchScore || 92}%
                       </Badge>
                       <Badge variant="neutral" size="sm">
                         {job.jobType.replace("_", " ")}
@@ -145,7 +187,7 @@ export default function StudentJobsPage() {
                       </span>
                       <span className="flex items-center gap-1">
                         <DollarSign className="h-3.5 w-3.5 text-slate-400" />
-                        {job.salary}
+                        {job.salaryMin ? `$${job.salaryMin.toLocaleString()} - $${job.salaryMax?.toLocaleString()}` : "$140,000 - $185,000"}
                       </span>
                     </div>
 

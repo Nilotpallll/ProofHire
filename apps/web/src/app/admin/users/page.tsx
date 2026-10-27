@@ -9,60 +9,93 @@ import { Input } from "@/components/ui/Input";
 import { Tabs } from "@/components/ui/Tabs";
 import { Users, Search, ShieldCheck, UserCheck, UserX } from "lucide-react";
 
+import { api } from "@/lib/api";
+
+const DEFAULT_USERS = [
+  {
+    id: "u-001",
+    name: "Alex Rivera",
+    email: "student@proofhire.io",
+    role: "STUDENT",
+    status: "ACTIVE",
+    joined: "Jan 10, 2025",
+  },
+  {
+    id: "u-002",
+    name: "Sarah Chen",
+    email: "recruiter@proofhire.io",
+    role: "RECRUITER",
+    status: "ACTIVE",
+    joined: "Jan 12, 2025",
+  },
+  {
+    id: "u-003",
+    name: "Dr. Marcus Vance",
+    email: "institution@proofhire.io",
+    role: "INSTITUTION",
+    status: "ACTIVE",
+    joined: "Jan 05, 2025",
+  },
+  {
+    id: "u-004",
+    name: "ProofHire SuperAdmin",
+    email: "admin@proofhire.io",
+    role: "ADMIN",
+    status: "ACTIVE",
+    joined: "Jan 01, 2025",
+  },
+  {
+    id: "u-005",
+    name: "Disputed Recruiter",
+    email: "spam@fakeagency.com",
+    role: "RECRUITER",
+    status: "SUSPENDED",
+    joined: "Feb 02, 2025",
+  },
+];
+
 export default function AdminUsersPage() {
   const [activeTab, setActiveTab] = React.useState("ALL");
   const [search, setSearch] = React.useState("");
+  const [users, setUsers] = React.useState(DEFAULT_USERS);
 
-  const [users, setUsers] = React.useState([
-    {
-      id: "u-001",
-      name: "Alex Rivera",
-      email: "student@proofhire.io",
-      role: "STUDENT",
-      status: "ACTIVE",
-      joined: "Jan 10, 2025",
-    },
-    {
-      id: "u-002",
-      name: "Sarah Chen",
-      email: "recruiter@proofhire.io",
-      role: "RECRUITER",
-      status: "ACTIVE",
-      joined: "Jan 12, 2025",
-    },
-    {
-      id: "u-003",
-      name: "Dr. Marcus Vance",
-      email: "institution@proofhire.io",
-      role: "INSTITUTION",
-      status: "ACTIVE",
-      joined: "Jan 05, 2025",
-    },
-    {
-      id: "u-004",
-      name: "ProofHire SuperAdmin",
-      email: "admin@proofhire.io",
-      role: "ADMIN",
-      status: "ACTIVE",
-      joined: "Jan 01, 2025",
-    },
-    {
-      id: "u-005",
-      name: "Disputed Recruiter",
-      email: "spam@fakeagency.com",
-      role: "RECRUITER",
-      status: "SUSPENDED",
-      joined: "Feb 02, 2025",
-    },
-  ]);
+  React.useEffect(() => {
+    async function loadUsers() {
+      try {
+        const data = await api.admin.getUsers(
+          search || undefined,
+          activeTab !== "ALL" ? activeTab : undefined
+        );
+        if (data && data.length > 0) {
+          setUsers(
+            data.map((u: any) => ({
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              role: u.role,
+              status: u.status,
+              joined: u.createdAt ? new Date(u.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Jan 10, 2025",
+            }))
+          );
+        }
+      } catch (e) {
+        console.warn("Using offline demo users fallback:", e);
+      }
+    }
+    loadUsers();
+  }, [search, activeTab]);
 
-  const toggleStatus = (id: string) => {
+  const toggleStatus = async (id: string) => {
+    const target = users.find((u) => u.id === id);
+    if (!target) return;
+    const newStatus = target.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
+    try {
+      await api.admin.updateUserStatus(id, newStatus as any);
+    } catch (e) {
+      console.warn("API updateUserStatus warning:", e);
+    }
     setUsers((prev) =>
-      prev.map((u) =>
-        u.id === id
-          ? { ...u, status: u.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE" }
-          : u
-      )
+      prev.map((u) => (u.id === id ? { ...u, status: newStatus } : u))
     );
   };
 

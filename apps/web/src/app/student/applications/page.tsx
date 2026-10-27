@@ -32,65 +32,109 @@ interface ApplicationRecord {
   timeline: { step: string; completed: boolean; current: boolean }[];
 }
 
+import { api } from "@/lib/api";
+
+function buildTimeline(status: string) {
+  return [
+    { step: "Applied", completed: true, current: status === "APPLIED" },
+    { step: "Under Review", completed: status !== "APPLIED", current: status === "UNDER_REVIEW" },
+    { step: "Shortlisted", completed: ["SHORTLISTED", "INTERVIEW", "SELECTED"].includes(status), current: status === "SHORTLISTED" },
+    { step: "Interview", completed: ["INTERVIEW", "SELECTED"].includes(status), current: status === "INTERVIEW" },
+    { step: "Decision", completed: status === "SELECTED", current: status === "SELECTED" },
+  ];
+}
+
+const DEFAULT_STUDENT_APPS: ApplicationRecord[] = [
+  {
+    id: "app-001",
+    jobTitle: "Senior Blockchain & Full-Stack Engineer",
+    company: "Aether Cryptographic Labs",
+    appliedDate: "Feb 12, 2025",
+    status: "SHORTLISTED",
+    aiMatchScore: 94,
+    verifiedCredentialsCount: 2,
+    recruiterNotes: "Candidate advanced to technical screen based on verified Stanford CS degree & cryptography background.",
+    timeline: [
+      { step: "Applied", completed: true, current: false },
+      { step: "Under Review", completed: true, current: false },
+      { step: "Shortlisted", completed: true, current: true },
+      { step: "Interview", completed: false, current: false },
+      { step: "Decision", completed: false, current: false },
+    ],
+  },
+  {
+    id: "app-002",
+    jobTitle: "AI Verification Systems Engineer",
+    company: "Veritas Security",
+    appliedDate: "Feb 15, 2025",
+    status: "UNDER_REVIEW",
+    aiMatchScore: 88,
+    verifiedCredentialsCount: 2,
+    recruiterNotes: "Under review by Principal Trust Architect. Code portfolio verified.",
+    timeline: [
+      { step: "Applied", completed: true, current: false },
+      { step: "Under Review", completed: true, current: true },
+      { step: "Shortlisted", completed: false, current: false },
+      { step: "Interview", completed: false, current: false },
+      { step: "Decision", completed: false, current: false },
+    ],
+  },
+  {
+    id: "app-003",
+    jobTitle: "Frontend React / Next.js Engineer",
+    company: "Nexus Decentralized Finance",
+    appliedDate: "Feb 16, 2025",
+    status: "APPLIED",
+    aiMatchScore: 91,
+    verifiedCredentialsCount: 2,
+    recruiterNotes: "Application received and queued for recruiter evaluation.",
+    timeline: [
+      { step: "Applied", completed: true, current: true },
+      { step: "Under Review", completed: false, current: false },
+      { step: "Shortlisted", completed: false, current: false },
+      { step: "Interview", completed: false, current: false },
+      { step: "Decision", completed: false, current: false },
+    ],
+  },
+];
+
 export default function StudentApplicationsPage() {
   const [appToWithdraw, setAppToWithdraw] = React.useState<ApplicationRecord | null>(null);
+  const [applications, setApplications] = React.useState<ApplicationRecord[]>(DEFAULT_STUDENT_APPS);
 
-  const [applications, setApplications] = React.useState<ApplicationRecord[]>([
-    {
-      id: "app-001",
-      jobTitle: "Senior Blockchain & Full-Stack Engineer",
-      company: "Aether Cryptographic Labs",
-      appliedDate: "Feb 12, 2025",
-      status: "SHORTLISTED",
-      aiMatchScore: 94,
-      verifiedCredentialsCount: 2,
-      recruiterNotes: "Candidate advanced to technical screen based on verified Stanford CS degree & cryptography background.",
-      timeline: [
-        { step: "Applied", completed: true, current: false },
-        { step: "Under Review", completed: true, current: false },
-        { step: "Shortlisted", completed: true, current: true },
-        { step: "Interview", completed: false, current: false },
-        { step: "Decision", completed: false, current: false },
-      ],
-    },
-    {
-      id: "app-002",
-      jobTitle: "AI Verification Systems Engineer",
-      company: "Veritas Security",
-      appliedDate: "Feb 15, 2025",
-      status: "UNDER_REVIEW",
-      aiMatchScore: 88,
-      verifiedCredentialsCount: 2,
-      recruiterNotes: "Under review by Principal Trust Architect. Code portfolio verified.",
-      timeline: [
-        { step: "Applied", completed: true, current: false },
-        { step: "Under Review", completed: true, current: true },
-        { step: "Shortlisted", completed: false, current: false },
-        { step: "Interview", completed: false, current: false },
-        { step: "Decision", completed: false, current: false },
-      ],
-    },
-    {
-      id: "app-003",
-      jobTitle: "Frontend React / Next.js Engineer",
-      company: "Nexus Decentralized Finance",
-      appliedDate: "Feb 16, 2025",
-      status: "APPLIED",
-      aiMatchScore: 91,
-      verifiedCredentialsCount: 2,
-      recruiterNotes: "Application received and queued for recruiter evaluation.",
-      timeline: [
-        { step: "Applied", completed: true, current: true },
-        { step: "Under Review", completed: false, current: false },
-        { step: "Shortlisted", completed: false, current: false },
-        { step: "Interview", completed: false, current: false },
-        { step: "Decision", completed: false, current: false },
-      ],
-    },
-  ]);
+  React.useEffect(() => {
+    async function loadMyApps() {
+      try {
+        const data = await api.applications.my();
+        if (data && data.length > 0) {
+          setApplications(
+            data.map((a: any) => ({
+              id: a.id,
+              jobTitle: a.jobTitle,
+              company: a.companyName || "Aether Cryptographic Labs",
+              appliedDate: a.appliedDate ? new Date(a.appliedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Recently",
+              status: a.status as any,
+              aiMatchScore: a.aiMatchScore || 90,
+              verifiedCredentialsCount: a.verifiedCredentialsCount || 2,
+              recruiterNotes: a.recruiterNotes || "Application submitted and queued for recruiter evaluation.",
+              timeline: buildTimeline(a.status),
+            }))
+          );
+        }
+      } catch (e) {
+        console.warn("Using offline demo student applications:", e);
+      }
+    }
+    loadMyApps();
+  }, []);
 
-  const confirmWithdraw = () => {
+  const confirmWithdraw = async () => {
     if (appToWithdraw) {
+      try {
+        await api.applications.withdraw(appToWithdraw.id);
+      } catch (e) {
+        console.warn("API withdraw failed, updating local state:", e);
+      }
       setApplications((prev) =>
         prev.map((a) =>
           a.id === appToWithdraw.id

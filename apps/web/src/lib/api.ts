@@ -72,6 +72,50 @@ export interface LoginResponse {
   };
 }
 
+export interface JobRecord {
+  id: string;
+  recruiterId: string;
+  companyName: string;
+  companyLogo?: string;
+  title: string;
+  description: string;
+  department: string;
+  location: string;
+  jobType: string;
+  experienceLevel: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  requiredSkills: string[];
+  preferredSkills?: string[];
+  applicantsCount?: number;
+  verifiedApplicantsCount?: number;
+  status: "OPEN" | "CLOSED" | "DRAFT";
+  createdAt?: string;
+}
+
+export interface ApplicationRecord {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  username: string;
+  status: "APPLIED" | "UNDER_REVIEW" | "SHORTLISTED" | "INTERVIEW" | "SELECTED" | "REJECTED" | "WITHDRAWN";
+  appliedDate: string;
+  coverLetter?: string;
+  aiMatchScore: number;
+  matchReasons: string[];
+  missingSkills: string[];
+  requiredSkillCoverage?: number;
+  preferredSkillCoverage?: number;
+  matchingMethodology?: string;
+  verifiedCredentialsCount: number;
+  recruiterNotes?: string;
+  statusHistory?: { status: string; timestamp: string; changedBy: string; note?: string }[];
+}
+
 export const api = {
   // Authentication
   auth: {
@@ -172,9 +216,244 @@ export const api = {
       const res = await fetch(url.toString(), {
         headers: getAuthHeaders(),
       });
+      if (!res.ok) return [];
+      return res.json();
+    },
+
+    async my(): Promise<any[]> {
+      const res = await fetch(`${API_BASE}/credentials/my`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) return [];
+      return res.json();
+    },
+  },
+
+  // Jobs
+  jobs: {
+    async list(filters?: { search?: string; department?: string; location?: string; status?: string }): Promise<JobRecord[]> {
+      const url = new URL(`${API_BASE}/jobs`);
+      if (filters?.search) url.searchParams.set("search", filters.search);
+      if (filters?.department) url.searchParams.set("department", filters.department);
+      if (filters?.location) url.searchParams.set("location", filters.location);
+      if (filters?.status) url.searchParams.set("status", filters.status);
+
+      const res = await fetch(url.toString(), {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) return [];
+      return res.json();
+    },
+
+    async get(id: string): Promise<JobRecord> {
+      const res = await fetch(`${API_BASE}/jobs/${encodeURIComponent(id)}`, {
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) {
-        return [];
+        throw new Error(`Job not found (${res.status})`);
       }
+      return res.json();
+    },
+
+    async my(): Promise<JobRecord[]> {
+      const res = await fetch(`${API_BASE}/jobs/recruiter/my`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) return [];
+      return res.json();
+    },
+
+    async create(jobData: {
+      title: string;
+      department: string;
+      location: string;
+      jobType: string;
+      experienceLevel: string;
+      salaryMin?: number;
+      salaryMax?: number;
+      description: string;
+      requiredSkills: string[];
+      preferredSkills?: string[];
+    }): Promise<JobRecord> {
+      const res = await fetch(`${API_BASE}/jobs`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(jobData),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to create job posting");
+      }
+      return res.json();
+    },
+
+    async close(id: string): Promise<JobRecord> {
+      const res = await fetch(`${API_BASE}/jobs/${encodeURIComponent(id)}/close`, {
+        method: "PATCH",
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error("Failed to close job requisition");
+      return res.json();
+    },
+
+    async publish(id: string): Promise<JobRecord> {
+      const res = await fetch(`${API_BASE}/jobs/${encodeURIComponent(id)}/publish`, {
+        method: "PATCH",
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error("Failed to publish job requisition");
+      return res.json();
+    },
+  },
+
+  // Applications
+  applications: {
+    async my(): Promise<ApplicationRecord[]> {
+      const res = await fetch(`${API_BASE}/applications/my`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) return [];
+      return res.json();
+    },
+
+    async withdraw(id: string): Promise<ApplicationRecord> {
+      const res = await fetch(`${API_BASE}/applications/${encodeURIComponent(id)}/withdraw`, {
+        method: "PATCH",
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to withdraw application");
+      }
+      return res.json();
+    },
+
+    async recruiter(jobId?: string): Promise<ApplicationRecord[]> {
+      const url = new URL(`${API_BASE}/applications/recruiter`);
+      if (jobId) url.searchParams.set("jobId", jobId);
+      const res = await fetch(url.toString(), {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) return [];
+      return res.json();
+    },
+
+    async get(id: string): Promise<ApplicationRecord> {
+      const res = await fetch(`${API_BASE}/applications/${encodeURIComponent(id)}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) {
+        throw new Error("Application not found");
+      }
+      return res.json();
+    },
+
+    async apply(dto: { jobId: string; coverLetter?: string; resumeId?: string }): Promise<ApplicationRecord> {
+      const res = await fetch(`${API_BASE}/applications/apply`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(dto),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to submit application");
+      }
+      return res.json();
+    },
+
+    async updateStatus(id: string, status: string, notes?: string): Promise<ApplicationRecord> {
+      const res = await fetch(`${API_BASE}/applications/${encodeURIComponent(id)}/status`, {
+        method: "PATCH",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status, notes }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to update application status");
+      }
+      return res.json();
+    },
+  },
+
+  // Institutions Management
+  institutions: {
+    async list() {
+      const res = await fetch(`${API_BASE}/institutions`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+
+    async pending() {
+      const res = await fetch(`${API_BASE}/institutions/pending`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) return [];
+      return res.json();
+    },
+
+    async approve(id: string) {
+      const res = await fetch(`${API_BASE}/institutions/${encodeURIComponent(id)}/approve`, {
+        method: "PATCH",
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error("Approval failed");
+      return res.json();
+    },
+
+    async reject(id: string) {
+      const res = await fetch(`${API_BASE}/institutions/${encodeURIComponent(id)}/reject`, {
+        method: "PATCH",
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error("Rejection failed");
+      return res.json();
+    },
+
+    async suspend(id: string) {
+      const res = await fetch(`${API_BASE}/institutions/${encodeURIComponent(id)}/suspend`, {
+        method: "PATCH",
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error("Suspension failed");
+      return res.json();
+    },
+  },
+
+  // Admin
+  admin: {
+    async getUsers(search?: string, role?: string, status?: string) {
+      const url = new URL(`${API_BASE}/admin/users`);
+      if (search) url.searchParams.set("search", search);
+      if (role) url.searchParams.set("role", role);
+      if (status) url.searchParams.set("status", status);
+
+      const res = await fetch(url.toString(), {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) return [];
+      return res.json();
+    },
+
+    async updateUserStatus(id: string, status: "ACTIVE" | "SUSPENDED" | "REJECTED") {
+      const res = await fetch(`${API_BASE}/admin/users/${encodeURIComponent(id)}/status`, {
+        method: "PATCH",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error("Failed to update user status");
+      return res.json();
+    },
+
+    async getAuditLogs(query?: string, entityType?: string, action?: string) {
+      const url = new URL(`${API_BASE}/admin/audit-logs`);
+      if (query) url.searchParams.set("query", query);
+      if (entityType) url.searchParams.set("entityType", entityType);
+      if (action) url.searchParams.set("action", action);
+
+      const res = await fetch(url.toString(), {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) return [];
       return res.json();
     },
   },
@@ -210,33 +489,27 @@ export const api = {
       return res.json();
     },
 
+    async match(candidateSkills: string[], requiredSkills: string[], verifiedSkills: string[] = []) {
+      const res = await fetch(`${AI_BASE}/api/v1/jobs/match`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requiredSkills,
+          preferredSkills: [],
+          candidateSkills,
+          verifiedSkills,
+          candidateProjects: ["Production EIP-712 Registry", "Next.js Cryptographic Portal"],
+        }),
+      });
+      if (!res.ok) {
+        throw new Error("AI Job matching failed");
+      }
+      return res.json();
+    },
+
     async health() {
       const res = await fetch(`${AI_BASE}/health`).catch(() => null);
       return res ? res.ok : false;
-    },
-  },
-
-  // Jobs
-  jobs: {
-    async list() {
-      const res = await fetch(`${API_BASE}/jobs`, {
-        headers: getAuthHeaders(),
-      });
-      if (!res.ok) return [];
-      return res.json();
-    },
-
-    async create(jobData: any) {
-      const res = await fetch(`${API_BASE}/jobs`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(jobData),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "Failed to create job posting");
-      }
-      return res.json();
     },
   },
 };
