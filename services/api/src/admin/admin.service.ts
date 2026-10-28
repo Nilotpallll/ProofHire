@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+import { userStore } from '../auth/user-store';
+
 export interface AdminUserRecord {
   id: string;
   email: string;
@@ -131,7 +133,7 @@ export class AdminService {
   ];
 
   async getUsers(search?: string, role?: string, status?: string): Promise<AdminUserRecord[]> {
-    let result = this.demoUsers;
+    let result: AdminUserRecord[] = userStore.getAll();
 
     if (search) {
       const q = search.toLowerCase();
@@ -156,7 +158,7 @@ export class AdminService {
     newStatus: 'ACTIVE' | 'SUSPENDED' | 'REJECTED',
     adminUser: any,
   ): Promise<AdminUserRecord> {
-    const user = this.demoUsers.find((u) => u.id === userId);
+    const user = userStore.findById(userId);
     if (!user) {
       throw new NotFoundException(`User with ID '${userId}' not found.`);
     }
@@ -166,7 +168,7 @@ export class AdminService {
     }
 
     const previousStatus = user.status;
-    user.status = newStatus;
+    userStore.updateStatus(userId, newStatus);
 
     // Record required audit log
     this.recordAudit(

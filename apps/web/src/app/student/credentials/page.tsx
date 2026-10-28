@@ -59,13 +59,14 @@ export default function StudentCredentialsPage() {
   const [shareModalOpen, setShareModalOpen] = React.useState(false);
   const [selectedCred, setSelectedCred] = React.useState<any>(null);
   const [copied, setCopied] = React.useState(false);
-  const [credentials, setCredentials] = React.useState<any[]>(DEFAULT_STUDENT_CREDS);
+  const [credentials, setCredentials] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     async function loadCreds() {
       try {
         const data = await api.credentials.my();
-        if (data && data.length > 0) {
+        if (data) {
           setCredentials(
             data.map((c: any) => ({
               id: c.id,
@@ -85,6 +86,8 @@ export default function StudentCredentialsPage() {
         }
       } catch (e) {
         console.warn("Using offline demo credentials fallback:", e);
+      } finally {
+        setLoading(false);
       }
     }
     loadCreds();
@@ -136,74 +139,86 @@ export default function StudentCredentialsPage() {
         </div>
 
         {/* Credentials Grid */}
-        <div className="grid grid-cols-1 gap-4">
-          {filtered.map((cred) => (
-            <Card key={cred.id} className="overflow-hidden hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-              <div className="p-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-mono font-semibold text-brand-600 bg-brand-50 dark:bg-brand-950/60 dark:text-brand-300 px-2 py-0.5 rounded border border-brand-200 dark:border-brand-800">
-                      {cred.credentialId}
-                    </span>
-                    <CredentialStatusIndicator status="ISSUED" txHash={cred.txHash} />
-                  </div>
+        {filtered.length === 0 ? (
+          <div className="text-center py-16 px-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40">
+            <Award className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
+              No Verifiable Credentials Found
+            </h3>
+            <p className="text-sm text-slate-500 max-w-md mx-auto mt-1">
+              When your accredited university or educational institution issues an on-chain academic credential or certificate to your email address, it will automatically anchor to the Ethereum blockchain and appear in your portfolio.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {filtered.map((cred) => (
+              <Card key={cred.id} className="overflow-hidden hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+                <div className="p-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-mono font-semibold text-brand-600 bg-brand-50 dark:bg-brand-950/60 dark:text-brand-300 px-2 py-0.5 rounded border border-brand-200 dark:border-brand-800">
+                        {cred.credentialId}
+                      </span>
+                      <CredentialStatusIndicator status="ISSUED" txHash={cred.txHash} />
+                    </div>
 
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                      {cred.title}
-                    </h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
-                      <Building2 className="h-3.5 w-3.5 text-slate-400" />
-                      Issued by <strong>{cred.institution}</strong> ({cred.institutionCode}) • Conferred {cred.issueDate}
-                    </p>
-                  </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                        {cred.title}
+                      </h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
+                        <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                        Issued by <strong>{cred.institution}</strong> ({cred.institutionCode}) • Conferred {cred.issueDate}
+                      </p>
+                    </div>
 
-                  <div className="text-xs text-slate-700 dark:text-slate-300 font-medium">
-                    <span className="text-slate-500 dark:text-slate-400">Graduation Standing:</span> {cred.grade}
-                  </div>
+                    <div className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                      <span className="text-slate-500 dark:text-slate-400">Graduation Standing:</span> {cred.grade}
+                    </div>
 
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
-                      Certified Skills Backed by this Credential
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {cred.skills.map((s: string) => (
-                        <span
-                          key={s}
-                          className="text-[11px] font-semibold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 px-2.5 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/80 flex items-center gap-1"
-                        >
-                          <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                          {s}
-                        </span>
-                      ))}
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                        Certified Skills Backed by this Credential
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {cred.skills.map((s: string) => (
+                          <span
+                            key={s}
+                            className="text-[11px] font-semibold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 px-2.5 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/80 flex items-center gap-1"
+                          >
+                            <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                            {s}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex flex-col sm:items-end gap-2 shrink-0">
-                  <Link href={`/verify/${cred.credentialId}`}>
-                    <Button variant="primary" size="sm" rightIcon={<ExternalLink className="h-3.5 w-3.5" />}>
-                      Public Verification Page
+                  <div className="flex flex-col sm:items-end gap-2 shrink-0">
+                    <Link href={`/verify/${cred.credentialId}`}>
+                      <Button variant="primary" size="sm" rightIcon={<ExternalLink className="h-3.5 w-3.5" />}>
+                        Public Verification Page
+                      </Button>
+                    </Link>
+                    <Button
+                      onClick={() => openShare(cred)}
+                      variant="outline"
+                      size="sm"
+                      leftIcon={<Share2 className="h-3.5 w-3.5" />}
+                    >
+                      Share Proof Link
                     </Button>
-                  </Link>
-                  <Button
-                    onClick={() => openShare(cred)}
-                    variant="outline"
-                    size="sm"
-                    leftIcon={<Share2 className="h-3.5 w-3.5" />}
-                  >
-                    Share Proof Link
-                  </Button>
+                  </div>
                 </div>
-              </div>
 
-              <div className="bg-slate-50 dark:bg-slate-900/60 border-t border-slate-100 dark:border-slate-800 p-3 px-6 text-[11px] font-mono text-slate-500 dark:text-slate-400 flex flex-wrap items-center justify-between gap-2">
-                <span>TX: {cred.txHash.slice(0, 22)}...</span>
-                <span>IPFS: {cred.ipfsHash}</span>
-              </div>
-            </Card>
-          ))}
-        </div>
+                <div className="bg-slate-50 dark:bg-slate-900/60 border-t border-slate-100 dark:border-slate-800 p-3 px-6 text-[11px] font-mono text-slate-500 dark:text-slate-400 flex flex-wrap items-center justify-between gap-2">
+                  <span>TX: {cred.txHash.slice(0, 22)}...</span>
+                  <span>IPFS: {cred.ipfsHash}</span>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Share Modal */}

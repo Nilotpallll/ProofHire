@@ -45,7 +45,7 @@ export class JobsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all jobs posted by the authenticated recruiter' })
   getMyJobs(@Request() req: any) {
-    return this.jobsService.getRecruiterJobs(req.user.userId || req.user.id);
+    return this.jobsService.getRecruiterJobs(req.user.userId || req.user.id, req.user);
   }
 
   @Get(':id')

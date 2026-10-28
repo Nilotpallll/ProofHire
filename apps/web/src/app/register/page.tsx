@@ -17,6 +17,7 @@ import {
   Briefcase,
   Building2,
   AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 
 export default function RegisterPage() {
@@ -29,6 +30,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [agreeTerms, setAgreeTerms] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,6 +61,8 @@ export default function RegisterPage() {
 
     if (!res.success) {
       setError(res.error || "Registration failed. Please try again.");
+    } else if (res.message) {
+      setSuccessMsg(res.message);
     }
     setSubmitting(false);
   };
@@ -83,6 +87,25 @@ export default function RegisterPage() {
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur-xl p-6 sm:p-8 shadow-luxury space-y-6">
+            {successMsg ? (
+              <div className="text-center py-6 space-y-4">
+                <div className="mx-auto h-12 w-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                  <CheckCircle2 className="h-6 w-6" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Application Received</h3>
+                <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
+                  {successMsg}
+                </p>
+                <div className="pt-2">
+                  <Link href="/login">
+                    <Button variant="primary" size="md" className="w-full">
+                      Go to Sign In
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <>
             {/* Role Selector Tabs */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -234,6 +257,8 @@ export default function RegisterPage() {
                 Sign in here
               </Link>
             </div>
+            </>
+            )}
           </div>
         </div>
       </main>

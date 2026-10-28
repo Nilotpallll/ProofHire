@@ -321,13 +321,18 @@ export class CredentialsService {
     const txHash = onChainTx.success && onChainTx.txHash ? onChainTx.txHash : undefined;
     const blockNumber = onChainTx.success && onChainTx.blockNumber ? onChainTx.blockNumber : undefined;
 
+    const recipientEmail = (data.recipientEmail || (data.recipientId?.includes('@') ? data.recipientId : 'student@proofhire.io')).toLowerCase();
+    const recipientId = data.recipientId || (recipientEmail !== 'student@proofhire.io' ? `student-${recipientEmail}` : 'student-001');
+    const recipientName = data.recipientName || (recipientEmail !== 'student@proofhire.io' ? recipientEmail.split('@')[0] : 'Alex Rivera');
+
     const newRecord = {
       id: `cred-${Date.now()}`,
       credentialId: credId,
       title: data.title,
       type: data.type || 'CERTIFICATE',
-      recipientId: data.recipientId || 'student-001',
-      recipientName: data.recipientName || 'Alex Rivera',
+      recipientId: recipientId,
+      recipientEmail: recipientEmail,
+      recipientName: recipientName,
       institutionId: issuerUser?.id || 'inst-001',
       institutionName: data.institutionName || 'Stanford University (Accredited)',
       institutionCode: 'STANFORD-CS',
@@ -472,7 +477,31 @@ export class CredentialsService {
     return Object.values(this.localRegistry);
   }
 
-  async getMyCredentials(userId: string) {
-    return Object.values(this.localRegistry).filter((c: any) => !c.isRevoked);
+  async getMyCredentials(userOrId: any) {
+    const userId = typeof userOrId === 'string' ? userOrId : (userOrId?.id || userOrId?.userId);
+    const userEmail = typeof userOrId === 'object' ? userOrId?.email?.toLowerCase() : undefined;
+
+    return Object.values(this.localRegistry).filter((c: any) => {
+      if (c.isRevoked) return false;
+      const isDemoStudent =
+        userId === 'student-001' ||
+        userId === 'demo-student-id-001' ||
+        userId === 'usr_student_01' ||
+        userEmail === 'student@proofhire.io' ||
+        !userId;
+
+      if (isDemoStudent) {
+        return (
+          c.recipientId === 'student-001' ||
+          !c.recipientEmail ||
+          c.recipientEmail.toLowerCase() === 'student@proofhire.io'
+        );
+      }
+
+      return (
+        (userEmail && c.recipientEmail && c.recipientEmail.toLowerCase() === userEmail) ||
+        (userId && c.recipientId && c.recipientId === userId)
+      );
+    });
   }
 }

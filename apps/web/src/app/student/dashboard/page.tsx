@@ -21,8 +21,10 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function StudentDashboardPage() {
+  const { user } = useAuth();
   const [copiedLink, setCopiedLink] = React.useState(false);
   const [credentials, setCredentials] = React.useState<any[]>([]);
   const [applications, setApplications] = React.useState<any[]>([]);
@@ -35,10 +37,10 @@ export default function StudentDashboardPage() {
           api.credentials.my().catch(() => []),
           api.applications.my().catch(() => []),
         ]);
-        if (creds && Array.isArray(creds) && creds.length > 0) {
+        if (creds && Array.isArray(creds)) {
           setCredentials(creds);
         }
-        if (apps && Array.isArray(apps) && apps.length > 0) {
+        if (apps && Array.isArray(apps)) {
           setApplications(apps);
         }
       } finally {
@@ -49,7 +51,8 @@ export default function StudentDashboardPage() {
   }, []);
 
   const copyProfileLink = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/u/alexrivera`);
+    const username = user?.email ? user.email.split('@')[0] : 'alexrivera';
+    navigator.clipboard.writeText(`${window.location.origin}/u/${username}`);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };

@@ -185,6 +185,8 @@ export const api = {
     async issue(payload: {
       credentialId: string;
       recipientEmail: string;
+      recipientName?: string;
+      recipientId?: string;
       title: string;
       type: "DEGREE" | "DIPLOMA" | "CERTIFICATE" | "BADGE";
       gradeOrScore?: string;

@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import Link from "next/link";
 import {
   FileCheck,
   Building2,
@@ -18,6 +19,7 @@ import {
   AlertCircle,
   XCircle,
   ArrowRight,
+  Briefcase,
 } from "lucide-react";
 
 interface ApplicationRecord {
@@ -100,7 +102,8 @@ const DEFAULT_STUDENT_APPS: ApplicationRecord[] = [
 
 export default function StudentApplicationsPage() {
   const [appToWithdraw, setAppToWithdraw] = React.useState<ApplicationRecord | null>(null);
-  const [applications, setApplications] = React.useState<ApplicationRecord[]>(DEFAULT_STUDENT_APPS);
+  const [applications, setApplications] = React.useState<ApplicationRecord[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [withdrawError, setWithdrawError] = React.useState<string | null>(null);
   const [isWithdrawing, setIsWithdrawing] = React.useState(false);
 
@@ -108,7 +111,7 @@ export default function StudentApplicationsPage() {
     async function loadMyApps() {
       try {
         const data = await api.applications.my();
-        if (data && data.length > 0) {
+        if (data) {
           setApplications(
             data.map((a: any) => ({
               id: a.id,
@@ -117,7 +120,7 @@ export default function StudentApplicationsPage() {
               appliedDate: a.appliedDate ? new Date(a.appliedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Recently",
               status: a.status as any,
               aiMatchScore: a.aiMatchScore || 90,
-              verifiedCredentialsCount: a.verifiedCredentialsCount || 2,
+              verifiedCredentialsCount: a.verifiedCredentialsCount || 0,
               recruiterNotes: a.recruiterNotes || "Application submitted and queued for recruiter evaluation.",
               timeline: buildTimeline(a.status),
             }))
@@ -125,6 +128,8 @@ export default function StudentApplicationsPage() {
         }
       } catch (e) {
         console.warn("Using offline demo student applications:", e);
+      } finally {
+        setLoading(false);
       }
     }
     loadMyApps();
@@ -163,7 +168,23 @@ export default function StudentApplicationsPage() {
       subtitle="Track your active job applications, recruiter review stages, and verified credential shortlisting status."
     >
       <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-6">
+        {applications.length === 0 ? (
+          <div className="text-center py-16 px-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40">
+            <Briefcase className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
+              No Job Applications Submitted Yet
+            </h3>
+            <p className="text-sm text-slate-500 max-w-md mx-auto mt-1 mb-4">
+              Explore open technical roles and apply with your on-chain verified credentials for instant trust verification.
+            </p>
+            <Link href="/student/jobs">
+              <Button variant="primary" size="sm">
+                Browse Open Roles
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
           {applications.map((app) => (
             <Card key={app.id} className="p-6">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b border-slate-100">
@@ -276,6 +297,7 @@ export default function StudentApplicationsPage() {
             </Card>
           ))}
         </div>
+        )}
       </div>
 
       {/* Confirmation Modal for Withdrawing Application */}

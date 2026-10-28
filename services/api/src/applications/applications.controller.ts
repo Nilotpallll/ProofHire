@@ -29,7 +29,7 @@ export class ApplicationsController {
   @Roles(UserRole.STUDENT)
   @ApiOperation({ summary: 'Get current student applications with progress timeline' })
   getMyApplications(@Request() req: any) {
-    return this.applicationsService.getApplicationsForStudent(req.user.userId || req.user.id);
+    return this.applicationsService.getApplicationsForStudent(req.user.userId || req.user.id, req.user);
   }
 
   @Get('recruiter')
@@ -51,6 +51,13 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Apply for an open job with verified credentials and AI match calculation' })
   @ApiResponse({ status: 201, description: 'Application submitted with AI match score generated' })
   apply(@Body() dto: ApplyJobDto, @Request() req: any) {
+    return this.applicationsService.apply(dto, req.user);
+  }
+
+  @Post()
+  @Roles(UserRole.STUDENT)
+  @ApiOperation({ summary: 'Apply for an open job (alias for /apply)' })
+  applyAlias(@Body() dto: ApplyJobDto, @Request() req: any) {
     return this.applicationsService.apply(dto, req.user);
   }
 

@@ -139,19 +139,32 @@ export class JobsService {
     return job;
   }
 
-  async getRecruiterJobs(recruiterId: string): Promise<JobRecord[]> {
-    // For demo/dev accounts, return recruiter-001 or matching jobs
+  async getRecruiterJobs(recruiterId: string, user?: any): Promise<JobRecord[]> {
+    const isDemo =
+      recruiterId === 'recruiter-001' ||
+      recruiterId === 'usr_recruiter_01' ||
+      recruiterId === 'demo-recruiter-id-002' ||
+      user?.email === 'recruiter@proofhire.io' ||
+      !recruiterId;
+
+    if (isDemo) {
+      return this.demoJobs.filter(
+        (j) => j.recruiterId === 'recruiter-001' || j.recruiterId === recruiterId || j.recruiterId.includes('recruiter'),
+      );
+    }
+
     return this.demoJobs.filter(
-      (j) => j.recruiterId === recruiterId || recruiterId === 'recruiter-001' || j.recruiterId.includes('recruiter'),
+      (j) => j.recruiterId === recruiterId || (user?.email && (j as any).recruiterEmail === user.email),
     );
   }
 
   async createJob(dto: CreateJobDto, user?: any): Promise<JobRecord> {
     const now = new Date().toISOString();
+    const recruiterId = user?.userId || user?.id || 'recruiter-001';
     const newJob: JobRecord = {
       id: `job-${Date.now()}`,
-      recruiterId: user?.userId || user?.id || 'recruiter-001',
-      companyName: user?.companyName || 'Aether Cryptographic Labs',
+      recruiterId: recruiterId,
+      companyName: user?.organization || user?.companyName || user?.name || 'Aether Cryptographic Labs',
       title: dto.title,
       description: dto.description,
       department: dto.department,
@@ -168,6 +181,7 @@ export class JobsService {
       createdAt: now,
       updatedAt: now,
     };
+    (newJob as any).recruiterEmail = user?.email;
 
     this.demoJobs.unshift(newJob);
     return newJob;

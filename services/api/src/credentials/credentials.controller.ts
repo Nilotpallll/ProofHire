@@ -36,7 +36,7 @@ export class CredentialsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user portfolio credentials' })
   async getMyCredentials(@Request() req: any) {
-    return this.credentialsService.getMyCredentials(req.user.userId);
+    return this.credentialsService.getMyCredentials(req.user);
   }
 
   @Post('issue')

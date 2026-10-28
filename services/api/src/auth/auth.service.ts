@@ -5,6 +5,8 @@ import { LoginDto, SeedLoginDto } from './dto/login.dto';
 import { RegisterDto, AllowedPublicRole } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { UserRole, AccountStatus } from '@prisma/client';
+import { userStore, StoredUser } from './user-store';
+import { institutionsStore } from '../institutions/institutions-store';
 
 @Injectable()
 export class AuthService {
@@ -112,12 +114,49 @@ export class AuthService {
       };
     } catch (err: any) {
       if (err instanceof BadRequestException) throw err;
-      // Fallback for offline development
-      const token = this.generateToken('dev-user-id', dto.email, dto.role as UserRole);
+
+      // Fallback for standalone/in-memory adapter
+      const existingInStore = userStore.findByEmail(dto.email);
+      if (existingInStore) {
+        throw new BadRequestException('A user with this email address already exists');
+      }
+
+      const newUserId = `usr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      const storedUser: StoredUser = {
+        id: newUserId,
+        email: dto.email.toLowerCase(),
+        passwordHash,
+        name: dto.name,
+        role: dto.role as any,
+        status: initialStatus as any,
+        organization: dto.organizationOrUniversity,
+        createdAt: new Date().toISOString(),
+      };
+      userStore.addUser(storedUser);
+
+      // If registering as institution, queue for admin approval
+      if (dto.role === AllowedPublicRole.INSTITUTION) {
+        institutionsStore.addInstitution({
+          id: `inst-${Date.now().toString().slice(-4)}`,
+          name: dto.name,
+          code: (dto.organizationOrUniversity || dto.name).replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 8),
+          website: `https://${dto.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.edu`,
+          status: 'PENDING',
+          contactEmail: dto.email.toLowerCase(),
+          logoUrl: 'https://images.unsplash.com/photo-1562774053-701939374585?w=100&h=100&fit=crop',
+          totalIssued: 0,
+          activeStudents: 0,
+        });
+      }
+
+      const token = this.generateToken(newUserId, dto.email, dto.role as UserRole);
       return {
-        message: 'Registration processed in offline development adapter.',
+        message:
+          initialStatus === AccountStatus.PENDING_APPROVAL
+            ? 'Institution registration submitted and pending admin verification.'
+            : 'Registration successful.',
         user: {
-          id: 'dev-user-id',
+          id: newUserId,
           email: dto.email,
           name: dto.name,
           role: dto.role,
@@ -135,18 +174,8 @@ export class AuthService {
       });
 
       if (!user) {
-        // Check if demo email matches
-        const upperMatch = Object.values(this.demoAccounts).find(
-          (acc) => acc.email.toLowerCase() === dto.email.toLowerCase(),
-        );
-        if (upperMatch) {
-          const token = this.generateToken(upperMatch.id, upperMatch.email, upperMatch.role);
-          return {
-            user: upperMatch,
-            accessToken: token,
-          };
-        }
-        throw new UnauthorizedException('Invalid email or password');
+        // Fallback to in-memory store
+        return await this.loginFromInMemory(dto);
       }
 
       const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
@@ -156,6 +185,10 @@ export class AuthService {
 
       if (user.status === AccountStatus.SUSPENDED) {
         throw new UnauthorizedException('Account has been suspended. Contact support.');
+      }
+
+      if (user.status === AccountStatus.PENDING_APPROVAL) {
+        throw new UnauthorizedException('Account is pending administrator approval before you can sign in.');
       }
 
       const token = this.generateToken(user.id, user.email, user.role);
@@ -172,19 +205,55 @@ export class AuthService {
       };
     } catch (err: any) {
       if (err instanceof UnauthorizedException) throw err;
-      // Fallback matching
-      const found = Object.values(this.demoAccounts).find(
-        (acc) => acc.email.toLowerCase() === dto.email.toLowerCase(),
-      );
-      if (found) {
-        const token = this.generateToken(found.id, found.email, found.role);
-        return {
-          user: found,
-          accessToken: token,
-        };
-      }
-      throw new UnauthorizedException('Invalid email or password');
+      return await this.loginFromInMemory(dto);
     }
+  }
+
+  private async loginFromInMemory(dto: LoginDto) {
+    const inMemUser = userStore.findByEmail(dto.email);
+    if (inMemUser) {
+      const isMatch = await bcrypt.compare(dto.password, inMemUser.passwordHash);
+      if (!isMatch) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      if (inMemUser.status === 'SUSPENDED') {
+        throw new UnauthorizedException('Account has been suspended. Contact support.');
+      }
+
+      if (inMemUser.status === 'PENDING_APPROVAL') {
+        throw new UnauthorizedException('Account is pending administrator approval before you can sign in.');
+      }
+
+      inMemUser.lastLogin = new Date().toISOString();
+      const token = this.generateToken(inMemUser.id, inMemUser.email, inMemUser.role as UserRole);
+
+      return {
+        user: {
+          id: inMemUser.id,
+          email: inMemUser.email,
+          name: inMemUser.name,
+          role: inMemUser.role,
+          status: inMemUser.status,
+          organization: inMemUser.organization,
+        },
+        accessToken: token,
+      };
+    }
+
+    // Demo account fallback check
+    const demoFound = Object.values(this.demoAccounts).find(
+      (acc) => acc.email.toLowerCase() === dto.email.toLowerCase(),
+    );
+    if (demoFound) {
+      const token = this.generateToken(demoFound.id, demoFound.email, demoFound.role);
+      return {
+        user: demoFound,
+        accessToken: token,
+      };
+    }
+
+    throw new UnauthorizedException('Invalid email or password');
   }
 
   async seedLogin(dto: SeedLoginDto) {

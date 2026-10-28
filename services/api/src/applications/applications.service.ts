@@ -158,9 +158,23 @@ export class ApplicationsService {
     },
   ];
 
-  async getApplicationsForStudent(studentId: string): Promise<ApplicationRecord[]> {
+  async getApplicationsForStudent(studentId: string, user?: any): Promise<ApplicationRecord[]> {
+    const email = user?.email?.toLowerCase();
+    const isDemo =
+      studentId === 'student-001' ||
+      studentId === 'demo-student-id-001' ||
+      studentId === 'usr_student_01' ||
+      email === 'student@proofhire.io' ||
+      (!studentId && !email);
+
+    if (isDemo) {
+      return this.demoApplications.filter(
+        (a) => a.studentId === 'student-001' || a.studentEmail.toLowerCase() === 'student@proofhire.io',
+      );
+    }
+
     return this.demoApplications.filter(
-      (a) => a.studentId === studentId || a.studentEmail === 'student@proofhire.io' || studentId === 'student-001',
+      (a) => a.studentId === studentId || (email && a.studentEmail.toLowerCase() === email),
     );
   }
 

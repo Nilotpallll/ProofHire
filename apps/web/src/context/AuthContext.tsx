@@ -105,27 +105,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
       redirectBasedOnRole(data.user.role as Role);
       return { success: true };
-    } catch {
-      // Backend offline or user not in DB: check seed demo accounts
-    }
-
-    // Fallback seed matcher
-    const match = Object.values(SEED_USERS).find(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    );
-
-    if (match) {
-      setUser(match);
-      setToken(`demo_token_${match.role.toLowerCase()}`);
-      localStorage.setItem("proofhire_user", JSON.stringify(match));
-      localStorage.setItem("proofhire_token", `demo_token_${match.role.toLowerCase()}`);
+    } catch (err: any) {
       setIsLoading(false);
-      redirectBasedOnRole(match.role);
-      return { success: true };
+      return {
+        success: false,
+        error: err?.message || "Invalid email or password. Use demo accounts or register a new user.",
+      };
     }
-
-    setIsLoading(false);
-    return { success: false, error: "Invalid email or password. Use demo accounts or register a new user." };
   };
 
   const register = async (data: any) => {
@@ -140,34 +126,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (res && res.user) {
+        // If institution pending approval, do not auto-login with full dashboard access
+        if (res.user.status === "PENDING_APPROVAL") {
+          setIsLoading(false);
+          return {
+            success: true,
+            message: res.message || "Institution registration submitted and pending admin verification.",
+          };
+        }
+
         setUser(res.user);
-        setToken(res.accessToken || `token_${res.user.id}`);
+        setToken(res.accessToken);
         localStorage.setItem("proofhire_user", JSON.stringify(res.user));
-        localStorage.setItem("proofhire_token", res.accessToken || `token_${res.user.id}`);
+        localStorage.setItem("proofhire_token", res.accessToken);
         setIsLoading(false);
         redirectBasedOnRole(res.user.role);
         return { success: true };
       }
-    } catch {
-      // Offline fallback
+    } catch (err: any) {
+      setIsLoading(false);
+      return {
+        success: false,
+        error: err?.message || "Registration failed. Please check your details and try again.",
+      };
     }
 
-    const newUser: User = {
-      id: `user-${Date.now()}`,
-      name: data.name,
-      email: data.email,
-      role: data.role,
-      status: data.role === "INSTITUTION" ? "PENDING_APPROVAL" : "ACTIVE",
-      organization: data.organizationOrUniversity,
-    };
-
-    setUser(newUser);
-    setToken(`demo_token_${newUser.id}`);
-    localStorage.setItem("proofhire_user", JSON.stringify(newUser));
-    localStorage.setItem("proofhire_token", `demo_token_${newUser.id}`);
     setIsLoading(false);
-    redirectBasedOnRole(newUser.role);
-    return { success: true };
+    return { success: false, error: "Registration could not be completed." };
   };
 
   const seedLogin = async (targetRole: Role) => {

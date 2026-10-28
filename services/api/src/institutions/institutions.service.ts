@@ -1,100 +1,68 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { institutionsStore, InstitutionRecord } from './institutions-store';
+import { userStore } from '../auth/user-store';
 
 @Injectable()
 export class InstitutionsService {
   constructor(private prisma: PrismaService) {}
 
-  private demoInstitutions = [
-    {
-      id: 'inst-001',
-      name: 'Stanford School of Engineering',
-      code: 'STANFORD-CS',
-      website: 'https://engineering.stanford.edu',
-      status: 'APPROVED',
-      contactEmail: 'registrar@stanford.edu',
-      logoUrl: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=100&h=100&fit=crop',
-      verifiedAt: '2024-01-15T00:00:00.000Z',
-      totalIssued: 1420,
-      activeStudents: 850,
-    },
-    {
-      id: 'inst-002',
-      name: 'MIT Decentralized Media Lab',
-      code: 'MIT-DML',
-      website: 'https://media.mit.edu',
-      status: 'APPROVED',
-      contactEmail: 'credentials@mit.edu',
-      logoUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=100&h=100&fit=crop',
-      verifiedAt: '2024-03-20T00:00:00.000Z',
-      totalIssued: 980,
-      activeStudents: 520,
-    },
-    {
-      id: 'inst-003',
-      name: 'UC Berkeley Blockchain Institute',
-      code: 'UCB-BC',
-      website: 'https://blockchain.berkeley.edu',
-      status: 'PENDING',
-      contactEmail: 'contact@blockchain.berkeley.edu',
-      logoUrl: 'https://images.unsplash.com/photo-1562774053-701939374585?w=100&h=100&fit=crop',
-      totalIssued: 0,
-      activeStudents: 0,
-    },
-    {
-      id: 'inst-004',
-      name: 'ETH Zurich Cryptography Center',
-      code: 'ETHZ-CRYPTO',
-      website: 'https://crypto.ethz.ch',
-      status: 'PENDING',
-      contactEmail: 'verify@ethz.ch',
-      logoUrl: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=100&h=100&fit=crop',
-      totalIssued: 0,
-      activeStudents: 0,
-    },
-  ];
-
-  async getInstitutions() {
-    return this.demoInstitutions;
+  async getInstitutions(): Promise<InstitutionRecord[]> {
+    return institutionsStore.getAll();
   }
 
-  async getInstitutionById(id: string) {
-    const inst = this.demoInstitutions.find((i) => i.id === id);
+  async getInstitutionById(id: string): Promise<InstitutionRecord> {
+    const inst = institutionsStore.findById(id);
     if (!inst) {
       throw new NotFoundException(`Institution with ID '${id}' not found.`);
     }
     return inst;
   }
 
-  async getPendingInstitutions() {
-    return this.demoInstitutions.filter((i) => i.status === 'PENDING');
+  async getPendingInstitutions(): Promise<InstitutionRecord[]> {
+    return institutionsStore.getAll().filter((i) => i.status === 'PENDING');
   }
 
-  async approveInstitution(id: string) {
-    const inst = this.demoInstitutions.find((i) => i.id === id);
+  async approveInstitution(id: string): Promise<InstitutionRecord> {
+    const inst = institutionsStore.updateStatus(id, 'APPROVED');
     if (!inst) {
       throw new NotFoundException(`Institution with ID '${id}' not found.`);
     }
-    inst.status = 'APPROVED';
-    (inst as any).verifiedAt = new Date().toISOString();
+
+    // Activate the corresponding user in userStore if present
+    const user = userStore.findByEmail(inst.contactEmail) || userStore.findById(id);
+    if (user && user.status === 'PENDING_APPROVAL') {
+      userStore.updateStatus(user.id, 'ACTIVE');
+    }
+
     return inst;
   }
 
-  async rejectInstitution(id: string) {
-    const inst = this.demoInstitutions.find((i) => i.id === id);
+  async rejectInstitution(id: string): Promise<InstitutionRecord> {
+    const inst = institutionsStore.updateStatus(id, 'REJECTED');
     if (!inst) {
       throw new NotFoundException(`Institution with ID '${id}' not found.`);
     }
-    inst.status = 'REJECTED';
+
+    const user = userStore.findByEmail(inst.contactEmail) || userStore.findById(id);
+    if (user) {
+      userStore.updateStatus(user.id, 'REJECTED');
+    }
+
     return inst;
   }
 
-  async suspendInstitution(id: string) {
-    const inst = this.demoInstitutions.find((i) => i.id === id);
+  async suspendInstitution(id: string): Promise<InstitutionRecord> {
+    const inst = institutionsStore.updateStatus(id, 'SUSPENDED');
     if (!inst) {
       throw new NotFoundException(`Institution with ID '${id}' not found.`);
     }
-    inst.status = 'SUSPENDED';
+
+    const user = userStore.findByEmail(inst.contactEmail) || userStore.findById(id);
+    if (user) {
+      userStore.updateStatus(user.id, 'SUSPENDED');
+    }
+
     return inst;
   }
 }

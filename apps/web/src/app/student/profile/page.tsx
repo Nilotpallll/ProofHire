@@ -7,20 +7,22 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { CheckCircle2, User, Globe, Github, Linkedin, Save, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function StudentProfilePage() {
-  const [name, setName] = React.useState("Alex Rivera");
+  const { user } = useAuth();
+  const [name, setName] = React.useState(user?.name || "Student Candidate");
   const [headline, setHeadline] = React.useState("Software Engineer & Distributed Systems Researcher");
   const [bio, setBio] = React.useState(
-    "B.S. in Computer Science with focus on cryptography, distributed consensus, and full-stack web architectures."
+    "Passionate software engineer focused on verifiable systems, cryptographic protocols, and robust full-stack architectures."
   );
-  const [university, setUniversity] = React.useState("Stanford University");
+  const [university, setUniversity] = React.useState(user?.organization || "University Partner");
   const [major, setMajor] = React.useState("Computer Science");
   const [gradYear, setGradYear] = React.useState("2025");
-  const [gpa, setGpa] = React.useState("3.92");
-  const [portfolioUrl, setPortfolioUrl] = React.useState("https://alexrivera.dev");
-  const [githubUrl, setGithubUrl] = React.useState("https://github.com/alexrivera-demo");
-  const [linkedinUrl, setLinkedinUrl] = React.useState("https://linkedin.com/in/alexrivera-demo");
+  const [gpa, setGpa] = React.useState("3.85");
+  const [portfolioUrl, setPortfolioUrl] = React.useState("https://portfolio.me");
+  const [githubUrl, setGithubUrl] = React.useState("https://github.com/profile");
+  const [linkedinUrl, setLinkedinUrl] = React.useState("https://linkedin.com/in/profile");
   const [saved, setSaved] = React.useState(false);
 
   React.useEffect(() => {
@@ -40,9 +42,12 @@ export default function StudentProfilePage() {
           if (p.githubUrl) setGithubUrl(p.githubUrl);
           if (p.linkedinUrl) setLinkedinUrl(p.linkedinUrl);
         } catch {}
+      } else if (user) {
+        if (user.name) setName(user.name);
+        if (user.organization) setUniversity(user.organization);
       }
     }
-  }, []);
+  }, [user]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();

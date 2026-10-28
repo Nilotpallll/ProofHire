@@ -21,6 +21,7 @@
     "test": "npm run test --workspaces --if-present",
     "test:ai": "powershell -Command \"cd services/ai; if (Test-Path .venv/Scripts/python.exe) { .venv/Scripts/python.exe -m unittest app/tests/test_ai_suite.py } else { python -m unittest app/tests/test_ai_suite.py }\"",
     "test:e2e": "npx tsx scripts/test-e2e-pipeline.ts",
+    "test:lifecycle": "npx tsx scripts/test-real-user-flow.ts",
     "demo:verify": "npx tsx scripts/verify-demo-scenario.ts",
     "health": "powershell -ExecutionPolicy Bypass -File scripts/health-check.ps1",
     "setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-dev.ps1",
