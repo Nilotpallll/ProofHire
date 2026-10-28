@@ -1,0 +1,33 @@
+ALEX RIVERA
+San Francisco, CA | alex.rivera@stanford.alumni.edu | https://github.com/alexrivera-demo | https://alexrivera.dev
+
+PROFESSIONAL SUMMARY
+Senior Distributed Systems & Full-Stack Engineer with 4+ years of experience engineering decentralized credential verification platforms, smart contracts, and high-performance React/Next.js web applications. B.S. in Computer Science from Stanford University (Summa Cum Laude, GPA 3.92).
+
+TECHNICAL COMPETENCIES
+- Core Languages: TypeScript, JavaScript, Python, Solidity, SQL, Go
+- Frontend Frameworks: React 19, Next.js 15 (App Router), Tailwind CSS, Redux Toolkit
+- Backend & Cloud: NestJS, Node.js, FastAPI, PostgreSQL, Prisma ORM, Redis, Docker
+- Blockchain & Web3: Ethers.js v6, Hardhat, OpenZeppelin v5, EVM, ERC-721, Zero-Knowledge Proofs
+
+EDUCATION
+Stanford University | Stanford, CA
+Bachelor of Science in Computer Science | September 2021 - June 2025
+- Cumulative GPA: 3.92 / 4.0 (Summa Cum Laude)
+- Relevant Coursework: Distributed Systems (CS 244B), Cryptography & Blockchain Protocols (CS 251), Database Systems (CS 145), Operating Systems (CS 140)
+
+PROFESSIONAL EXPERIENCE
+Aether Cryptographic Labs | San Francisco, CA
+Senior Protocol Engineer | July 2024 - Present
+- Designed and deployed verifiable credential verification pipelines processing 10,000+ daily assertions.
+- Authored Ethereum Solidity smart contracts reducing cryptographic gas verification costs by 38%.
+- Integrated FastAPI natural language parsing microservices with NestJS core API gateway.
+
+Veritas Systems | Palo Alto, CA
+Full-Stack Software Engineering Intern | June 2023 - September 2023
+- Built responsive candidate evaluation portal in Next.js 14 and Tailwind CSS with sub-100ms LCP.
+- Implemented PostgreSQL query indexing and Prisma relations cutting API latency from 450ms to 42ms.
+
+PROJECTS
+- ProofHire Protocol: Open-source decentralized credential and ethical AI recruiting infrastructure.
+- ZeroKnowledge-ID: Client-side zk-SNARK proof generator for private academic credential verification.

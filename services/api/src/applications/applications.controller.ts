@@ -37,7 +37,7 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Get candidates applications pipeline for recruiter' })
   @ApiQuery({ name: 'jobId', required: false, description: 'Filter candidates by specific job requisition' })
   getRecruiterApplications(@Request() req: any, @Query('jobId') jobId?: string) {
-    return this.applicationsService.getApplicationsForRecruiter(req.user.userId || req.user.id, jobId);
+    return this.applicationsService.getApplicationsForRecruiter(req.user.userId || req.user.id, jobId, req.user);
   }
 
   @Get(':id')

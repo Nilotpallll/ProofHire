@@ -22,6 +22,7 @@ import {
   ExternalLink,
   QrCode,
   FileCheck,
+  AlertCircle,
 } from "lucide-react";
 
 export default function InstitutionIssueCredentialPage() {
@@ -52,6 +53,7 @@ export default function InstitutionIssueCredentialPage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [issuanceStep, setIssuanceStep] = React.useState<string>("");
   const [copiedField, setCopiedField] = React.useState<string | null>(null);
+  const [issueError, setIssueError] = React.useState<string | null>(null);
 
   const [successResult, setSuccessResult] = React.useState<{
     credentialId: string;
@@ -100,21 +102,14 @@ export default function InstitutionIssueCredentialPage() {
   const handleIssueSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setIssueError(null);
 
-    // Step 1
     setIssuanceStep("Generating canonical document digest & IPFS packaging...");
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 400));
 
-    // Step 2
     setIssuanceStep("Submitting transaction to CredentialRegistry smart contract...");
-    await new Promise((r) => setTimeout(r, 700));
-
-    // Step 3
-    setIssuanceStep("Confirming block inclusion on Ethereum network...");
-    await new Promise((r) => setTimeout(r, 500));
 
     const credId = `CRED-STANFORD-${Date.now().toString().slice(-4)}`;
-    const tx = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("")}`;
 
     try {
       const data = await api.credentials.issue({
@@ -127,27 +122,22 @@ export default function InstitutionIssueCredentialPage() {
         documentDigest: computedDigest,
       });
 
-      if (data) {
+      if (data && (data.credential || data.txHash)) {
         setSuccessResult({
           credentialId: data.credential?.credentialId || credId,
-          txHash: data.credential?.txHash || tx,
-          documentDigest: computedDigest,
+          txHash: data.credential?.txHash || data.txHash || "0x0",
+          documentDigest: data.credential?.documentDigest || computedDigest,
           ipfsHash: data.credential?.ipfsHash || "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi",
         });
-        setIsSubmitting(false);
-        return;
+      } else {
+        throw new Error("Unable to confirm on-chain issuance response.");
       }
-    } catch {
-      // Fallback
+    } catch (err: any) {
+      setIssueError(err?.message || "Failed to anchor credential to smart contract registry.");
+    } finally {
+      setIsSubmitting(false);
+      setIssuanceStep("");
     }
-
-    setSuccessResult({
-      credentialId: credId,
-      txHash: tx,
-      documentDigest: computedDigest,
-      ipfsHash: "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi",
-    });
-    setIsSubmitting(false);
   };
 
   return (
@@ -250,11 +240,17 @@ export default function InstitutionIssueCredentialPage() {
           </Card>
         ) : (
           <form onSubmit={handleIssueSubmit} className="space-y-6">
+            {issueError && (
+              <div className="rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50/70 dark:bg-rose-950/40 p-4 text-xs text-rose-800 dark:text-rose-300 flex items-center gap-3">
+                <AlertCircle className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0" />
+                <span>{issueError}</span>
+              </div>
+            )}
             {/* Student & Degree Details */}
-            <Card className="border-slate-200 shadow-sm bg-white">
-              <CardHeader className="border-b border-slate-100 pb-4">
+            <Card>
+              <CardHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Award className="h-4 w-4 text-blue-600" /> Recipient & Award Specifications
+                  <Award className="h-4 w-4 text-brand-600 dark:text-brand-400" /> Recipient & Award Specifications
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -282,13 +278,13 @@ export default function InstitutionIssueCredentialPage() {
                     required
                   />
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                       Credential Type
                     </label>
                     <select
                       value={type}
                       onChange={(e) => setType(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                     >
                       <option value="DEGREE">Degree (B.S., M.S., Ph.D.)</option>
                       <option value="DIPLOMA">Diploma</option>
@@ -316,51 +312,52 @@ export default function InstitutionIssueCredentialPage() {
             </Card>
 
             {/* Document Upload & Digest Calculation */}
-            <Card className="border-slate-200 shadow-sm bg-white">
-              <CardHeader className="border-b border-slate-100 pb-4">
+            <Card>
+              <CardHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <FileCheck className="h-4 w-4 text-blue-600" /> Certificate Document & Cryptographic Digest
+                  <FileCheck className="h-4 w-4 text-brand-600 dark:text-brand-400" /> Certificate Document & Cryptographic Digest
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
-                <p className="text-xs text-slate-600">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   Select the official certificate PDF. ProofHire computes its Keccak-256 / SHA-256 digest in your browser. Only the cryptographic hash is written to the blockchain registry—keeping sensitive student records private.
                 </p>
 
-                <div className="border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-xl p-5 text-center transition-colors bg-slate-50/50">
+                <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-400 rounded-xl p-5 text-center transition-colors bg-slate-50/50 dark:bg-slate-950/50">
                   <input
                     type="file"
                     id="cert-upload"
                     className="hidden"
                     accept=".pdf,.png,.jpg"
                     onChange={handleFileChange}
+                    aria-label="Upload official certificate"
                   />
                   <label htmlFor="cert-upload" className="cursor-pointer block">
-                    <Upload className="h-7 w-7 text-slate-400 mx-auto mb-1.5" />
-                    <span className="text-sm font-semibold text-blue-600 hover:underline">
+                    <Upload className="h-7 w-7 text-slate-400 dark:text-slate-500 mx-auto mb-1.5" />
+                    <span className="text-sm font-semibold text-brand-600 hover:underline dark:text-brand-400">
                       {selectedFile ? selectedFile.name : "Select Official Diploma / Certificate (PDF)"}
                     </span>
-                    <span className="text-[11px] text-slate-500 block mt-0.5">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
                       Max file size: 10MB. Digest is computed client-side.
                     </span>
                   </label>
                 </div>
 
-                <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono space-y-1">
-                  <div className="text-slate-500 flex items-center justify-between">
+                <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-mono space-y-1">
+                  <div className="text-slate-500 dark:text-slate-400 flex items-center justify-between">
                     <span>Computed Document Digest:</span>
-                    {isHashing && <span className="text-blue-600 animate-pulse">Hashing...</span>}
+                    {isHashing && <span className="text-brand-600 dark:text-brand-400 animate-pulse">Hashing...</span>}
                   </div>
-                  <div className="text-slate-900 break-all font-semibold">{computedDigest}</div>
+                  <div className="text-slate-900 dark:text-slate-100 break-all font-semibold">{computedDigest}</div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Anchored Skills */}
-            <Card className="border-slate-200 shadow-sm bg-white">
-              <CardHeader className="border-b border-slate-100 pb-4">
+            <Card>
+              <CardHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-emerald-600" /> Verified Competencies
+                  <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> Verified Competencies
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">

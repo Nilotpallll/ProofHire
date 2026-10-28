@@ -30,6 +30,7 @@ class ClaimVerificationResult(BaseModel):
     status: ClaimStatus
     reason: str
     evidenceDetails: str | None = None
+    evidenceTier: str = Field(default="CRYPTOGRAPHIC_CONSENSUS", description="CRYPTOGRAPHIC_CONSENSUS or MANUAL_REVIEW_RECOMMENDED")
     recommendation: str
 
 class ClaimsCheckRequest(BaseModel):
@@ -43,4 +44,12 @@ class ClaimsCheckResponse(BaseModel):
     revokedCount: int
     mismatchCount: int
     results: list[ClaimVerificationResult]
-    legalDisclaimer: str = "Unverified status indicates that independent cryptographic proof was not provided on-chain; it does not constitute an accusation of fraudulent representation."
+    legalDisclaimer: str = (
+        "Absence of a blockchain credential does not constitute evidence of fraud, embellishment, or dishonesty. "
+        "Many accredited institutions have not yet digitized credential registries on-chain. "
+        "Unverified claims indicate missing cryptographic proof, requiring standard offline confirmation."
+    )
+    cryptographicAuthorityNotice: str = (
+        "ProofHire smart contract registry state is the sole authoritative proof of blockchain verification. "
+        "AI and language models never determine or override on-chain cryptographic truth."
+    )

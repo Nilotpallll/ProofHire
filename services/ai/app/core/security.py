@@ -5,7 +5,7 @@ from app.core.config import settings
 def validate_file_size(size_bytes: int):
     if size_bytes > settings.MAX_UPLOAD_SIZE_BYTES:
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=getattr(status, "HTTP_413_CONTENT_TOO_LARGE", 413),
             detail=f"File exceeds maximum allowed size of {settings.MAX_UPLOAD_SIZE_BYTES / (1024 * 1024):.1f}MB",
         )
 

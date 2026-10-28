@@ -26,6 +26,7 @@ export default function StudentJobsPage() {
   const [coverLetter, setCoverLetter] = React.useState("");
   const [appliedJobs, setAppliedJobs] = React.useState<string[]>([]);
   const [applying, setApplying] = React.useState(false);
+  const [applyError, setApplyError] = React.useState<string | null>(null);
   const [jobs, setJobs] = React.useState<JobRecord[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -113,6 +114,7 @@ export default function StudentJobsPage() {
 
   const openApply = (job: any) => {
     setSelectedJob(job);
+    setApplyError(null);
     setCoverLetter(
       `I am excited to apply for the ${job.title} position at ${job.companyName}. My verified degrees and smart contract engineering experience align strongly with your technical stack.`
     );
@@ -122,17 +124,18 @@ export default function StudentJobsPage() {
   const handleApplySubmit = async () => {
     if (!selectedJob) return;
     setApplying(true);
+    setApplyError(null);
     try {
       await api.applications.apply({
         jobId: selectedJob.id,
         coverLetter,
       });
       setAppliedJobs((prev) => [...prev, selectedJob.id]);
-    } catch {
-      setAppliedJobs((prev) => [...prev, selectedJob.id]);
+      setApplyModalOpen(false);
+    } catch (err: any) {
+      setApplyError(err?.message || "Failed to submit application. Please check your credentials.");
     } finally {
       setApplying(false);
-      setApplyModalOpen(false);
     }
   };
 
@@ -160,15 +163,15 @@ export default function StudentJobsPage() {
           {filteredJobs.map((job) => {
             const hasApplied = appliedJobs.includes(job.id);
             return (
-              <Card key={job.id} className="p-6 hover:border-slate-300 transition-all">
+              <Card key={job.id} className="p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                         {job.companyName}
                       </span>
                       <Badge variant="brand" size="sm">
-                        <Sparkles className="h-3 w-3 mr-1 text-brand-600" />
+                        <Sparkles className="h-3 w-3 mr-1 text-brand-600 dark:text-brand-400" />
                         AI Fit: {(job as any).matchScore || 92}%
                       </Badge>
                       <Badge variant="neutral" size="sm">
@@ -176,11 +179,11 @@ export default function StudentJobsPage() {
                       </Badge>
                     </div>
 
-                    <h3 className="text-lg font-bold text-slate-900">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                       {job.title}
                     </h3>
 
-                    <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3.5 w-3.5 text-slate-400" />
                         {job.location}
@@ -191,7 +194,7 @@ export default function StudentJobsPage() {
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-600 max-w-2xl leading-relaxed pt-1">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed pt-1">
                       {job.description}
                     </p>
 
@@ -199,7 +202,7 @@ export default function StudentJobsPage() {
                       {job.requiredSkills.map((s) => (
                         <span
                           key={s}
-                          className="text-[11px] font-semibold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded border border-slate-200"
+                          className="text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700"
                         >
                           {s}
                         </span>
@@ -236,11 +239,16 @@ export default function StudentJobsPage() {
           isOpen={applyModalOpen}
           onClose={() => setApplyModalOpen(false)}
           title={`Apply to ${selectedJob.title}`}
-          description={`Submit your verified credentials and resume to ${selectedJob.company}`}
+          description={`Submit your verified credentials and resume to ${selectedJob.companyName || selectedJob.company || "the hiring team"}`}
         >
           <div className="space-y-4">
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5 text-xs text-emerald-800 flex items-start gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+            {applyError && (
+              <div className="rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50/70 dark:bg-rose-950/40 p-3.5 text-xs text-rose-800 dark:text-rose-300">
+                {applyError}
+              </div>
+            )}
+            <div className="rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/70 dark:bg-emerald-950/40 p-3.5 text-xs text-emerald-800 dark:text-emerald-300 flex items-start gap-2.5">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold">Verified Proof Attachment:</span>
                 <p className="mt-0.5 text-[11px]">
@@ -250,14 +258,14 @@ export default function StudentJobsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 Short Cover Note
               </label>
               <textarea
                 rows={4}
                 value={coverLetter}
                 onChange={(e) => setCoverLetter(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 p-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
 

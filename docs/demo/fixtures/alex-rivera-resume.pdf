@@ -1,0 +1,69 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2317 >>
+stream
+BT
+/F1 9 Tf
+40 760 Td
+11 TL
+(ALEX RIVERA) Tj T*
+(San Francisco, CA | alex.rivera@stanford.alumni.edu | https://github.com/alexrivera-demo | https://alexrivera.dev) Tj T*
+() Tj T*
+(PROFESSIONAL SUMMARY) Tj T*
+(Senior Distributed Systems & Full-Stack Engineer with 4+ years of experience engineering decentralized credential verification platforms, smart contracts, and high-performance React/Next.js web applications. B.S. in Computer Science from Stanford University Summa Cum Laude, GPA 3.92.) Tj T*
+() Tj T*
+(TECHNICAL COMPETENCIES) Tj T*
+(- Core Languages: TypeScript, JavaScript, Python, Solidity, SQL, Go) Tj T*
+(- Frontend Frameworks: React 19, Next.js 15 App Router, Tailwind CSS, Redux Toolkit) Tj T*
+(- Backend & Cloud: NestJS, Node.js, FastAPI, PostgreSQL, Prisma ORM, Redis, Docker) Tj T*
+(- Blockchain & Web3: Ethers.js v6, Hardhat, OpenZeppelin v5, EVM, ERC-721, Zero-Knowledge Proofs) Tj T*
+() Tj T*
+(EDUCATION) Tj T*
+(Stanford University | Stanford, CA) Tj T*
+(Bachelor of Science in Computer Science | September 2021 - June 2025) Tj T*
+(- Cumulative GPA: 3.92 / 4.0 Summa Cum Laude) Tj T*
+(- Relevant Coursework: Distributed Systems CS 244B, Cryptography & Blockchain Protocols CS 251, Database Systems CS 145, Operating Systems CS 140) Tj T*
+() Tj T*
+(PROFESSIONAL EXPERIENCE) Tj T*
+(Aether Cryptographic Labs | San Francisco, CA) Tj T*
+(Senior Protocol Engineer | July 2024 - Present) Tj T*
+(- Designed and deployed verifiable credential verification pipelines processing 10,000+ daily assertions.) Tj T*
+(- Authored Ethereum Solidity smart contracts reducing cryptographic gas verification costs by 38%.) Tj T*
+(- Integrated FastAPI natural language parsing microservices with NestJS core API gateway.) Tj T*
+() Tj T*
+(Veritas Systems | Palo Alto, CA) Tj T*
+(Full-Stack Software Engineering Intern | June 2023 - September 2023) Tj T*
+(- Built responsive candidate evaluation portal in Next.js 14 and Tailwind CSS with sub-100ms LCP.) Tj T*
+(- Implemented PostgreSQL query indexing and Prisma relations cutting API latency from 450ms to 42ms.) Tj T*
+() Tj T*
+(PROJECTS) Tj T*
+(- ProofHire Protocol: Open-source decentralized credential and ethical AI recruiting infrastructure.) Tj T*
+(- ZeroKnowledge-ID: Client-side zk-SNARK proof generator for private academic credential verification.) Tj T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000244 00000 n 
+0000000500 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+600
+%%EOF

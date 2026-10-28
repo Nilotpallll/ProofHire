@@ -3,6 +3,7 @@ node_modules/
 
 # Python
 .venv/
+*/.venv/
 __pycache__/
 *.py[cod]
 
@@ -42,4 +43,8 @@ typechain-types/
 *.tsbuildinfo
 
 # Local databases
-*.db
+*.db
+*.sqlite
+*.sqlite3
+pgdata/
+*pgdata/

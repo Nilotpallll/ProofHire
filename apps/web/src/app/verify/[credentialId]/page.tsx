@@ -54,8 +54,8 @@ export default function VerifyCredentialPage() {
     try {
       const res = await api.credentials.verify(id, digest);
       setData(res);
-      if (digest && res.credential?.documentDigest) {
-        const matches = res.credential.documentDigest.toLowerCase().includes(digest.slice(2, 12).toLowerCase());
+      if (digest) {
+        const matches = res.digestMatches ?? (res.credential?.documentDigest?.toLowerCase() === digest.toLowerCase());
         setDigestMatch(matches);
       }
     } catch {

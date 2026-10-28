@@ -56,9 +56,7 @@ export default function RecruiterNewJobPage() {
       });
       router.push("/recruiter/jobs");
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to create job requisition. Falling back to local queue.");
-      // Fallback redirection after brief pause so user can proceed even if offline
-      setTimeout(() => router.push("/recruiter/jobs"), 1200);
+      setErrorMsg(err.message || "Failed to create job requisition. Please check your network connection and required fields.");
     } finally {
       setSubmitting(false);
     }
@@ -79,8 +77,8 @@ export default function RecruiterNewJobPage() {
     >
       <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
         {errorMsg && (
-          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+          <div className="p-3 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 rounded-lg text-xs text-rose-800 dark:text-rose-300 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -107,13 +105,13 @@ export default function RecruiterNewJobPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Employment Type
                 </label>
                 <select
                   value={jobType}
                   onChange={(e) => setJobType(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 p-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 p-2 text-sm text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
                   <option value="FULL_TIME">Full Time</option>
                   <option value="CONTRACT">Contract</option>
@@ -123,13 +121,13 @@ export default function RecruiterNewJobPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Experience Level
                 </label>
                 <select
                   value={experienceLevel}
                   onChange={(e) => setExperienceLevel(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 p-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 p-2 text-sm text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
                   <option value="ENTRY">Entry Level (0-2 yrs)</option>
                   <option value="MID">Mid Level (3-5 yrs)</option>
@@ -171,7 +169,7 @@ export default function RecruiterNewJobPage() {
             <CardTitle>Required Skills for AI Neural Matching</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               ProofHire AI compares candidate blockchain credentials against these exact competencies to calculate the verified match score.
             </p>
 
@@ -196,13 +194,13 @@ export default function RecruiterNewJobPage() {
               {skills.map((s) => (
                 <span
                   key={s}
-                  className="inline-flex items-center gap-1.5 bg-brand-50 text-brand-800 text-xs font-semibold px-3 py-1 rounded-lg border border-brand-200"
+                  className="inline-flex items-center gap-1.5 bg-brand-50 dark:bg-brand-950/60 text-brand-800 dark:text-brand-300 text-xs font-semibold px-3 py-1 rounded-lg border border-brand-200 dark:border-brand-800"
                 >
                   {s}
                   <button
                     type="button"
                     onClick={() => removeSkill(s)}
-                    className="hover:text-red-600"
+                    className="hover:text-red-600 dark:hover:text-red-400"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -223,7 +221,7 @@ export default function RecruiterNewJobPage() {
               placeholder="Describe the mission, key responsibilities, and team culture..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 p-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
               required
             />
 

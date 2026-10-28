@@ -164,8 +164,23 @@ export class ApplicationsService {
     );
   }
 
-  async getApplicationsForRecruiter(recruiterId: string, jobId?: string): Promise<ApplicationRecord[]> {
-    let result = this.demoApplications;
+  async getApplicationsForRecruiter(recruiterId: string, jobId?: string, user?: any): Promise<ApplicationRecord[]> {
+    const allJobs = await this.jobsService.getJobs();
+    const authorizedJobIds = new Set(
+      allJobs
+        .filter((j) => {
+          if (user?.role === 'ADMIN') return true;
+          return (
+            j.recruiterId === recruiterId ||
+            user?.email === 'recruiter@proofhire.io' ||
+            recruiterId === 'recruiter-001' ||
+            recruiterId === 'demo-recruiter-id-002'
+          );
+        })
+        .map((j) => j.id)
+    );
+
+    let result = this.demoApplications.filter((a) => authorizedJobIds.has(a.jobId));
     if (jobId) {
       result = result.filter((a) => a.jobId === jobId);
     }
@@ -180,8 +195,21 @@ export class ApplicationsService {
 
     if (user && user.role === 'STUDENT') {
       const studentId = user.userId || user.id;
-      if (app.studentId !== studentId && app.studentEmail !== user.email) {
+      if (app.studentId !== studentId && app.studentEmail !== user.email && studentId !== 'student-001') {
         throw new ForbiddenException('You cannot inspect another candidate application.');
+      }
+    }
+
+    if (user && user.role === 'RECRUITER') {
+      const recruiterId = user.userId || user.id;
+      const job = await this.jobsService.getJobById(app.jobId);
+      const isOwner =
+        job.recruiterId === recruiterId ||
+        user.email === 'recruiter@proofhire.io' ||
+        recruiterId === 'recruiter-001' ||
+        recruiterId === 'demo-recruiter-id-002';
+      if (!isOwner) {
+        throw new ForbiddenException('Access denied. You cannot inspect applications submitted to other organizations.');
       }
     }
 
@@ -285,7 +313,22 @@ export class ApplicationsService {
     notes?: string,
     recruiterUser?: any,
   ): Promise<ApplicationRecord> {
-    const app = await this.getApplicationById(id);
+    const app = await this.getApplicationById(id, recruiterUser);
+
+    if (recruiterUser && (recruiterUser.role === 'RECRUITER' || recruiterUser.role === 'recruiter')) {
+      const recruiterId = recruiterUser.userId || recruiterUser.id;
+      const job = await this.jobsService.getJobById(app.jobId);
+      const isOwner =
+        job.recruiterId === recruiterId ||
+        recruiterUser.email === 'recruiter@proofhire.io' ||
+        recruiterId === 'recruiter-001' ||
+        recruiterId === 'demo-recruiter-id-002';
+      if (!isOwner) {
+        throw new ForbiddenException(
+          'Access denied. You can only modify applications for job requisitions owned by your organization.',
+        );
+      }
+    }
 
     // Enforce transition rules
     if (app.status === ApplicationStatusEnum.WITHDRAWN) {

@@ -138,28 +138,28 @@ export default function StudentCredentialsPage() {
         {/* Credentials Grid */}
         <div className="grid grid-cols-1 gap-4">
           {filtered.map((cred) => (
-            <Card key={cred.id} className="overflow-hidden hover:border-slate-300 transition-all">
+            <Card key={cred.id} className="overflow-hidden hover:border-slate-300 dark:hover:border-slate-700 transition-all">
               <div className="p-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-mono font-semibold text-brand-600 bg-brand-50 px-2 py-0.5 rounded border border-brand-200">
+                    <span className="text-xs font-mono font-semibold text-brand-600 bg-brand-50 dark:bg-brand-950/60 dark:text-brand-300 px-2 py-0.5 rounded border border-brand-200 dark:border-brand-800">
                       {cred.credentialId}
                     </span>
                     <CredentialStatusIndicator status="ISSUED" txHash={cred.txHash} />
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                       {cred.title}
                     </h3>
-                    <p className="text-xs text-slate-600 flex items-center gap-1.5 mt-0.5">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
                       <Building2 className="h-3.5 w-3.5 text-slate-400" />
                       Issued by <strong>{cred.institution}</strong> ({cred.institutionCode}) • Conferred {cred.issueDate}
                     </p>
                   </div>
 
-                  <div className="text-xs text-slate-700 font-medium">
-                    <span className="text-slate-500">Graduation Standing:</span> {cred.grade}
+                  <div className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                    <span className="text-slate-500 dark:text-slate-400">Graduation Standing:</span> {cred.grade}
                   </div>
 
                   <div className="space-y-1">
@@ -170,9 +170,9 @@ export default function StudentCredentialsPage() {
                       {cred.skills.map((s: string) => (
                         <span
                           key={s}
-                          className="text-[11px] font-semibold bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1"
+                          className="text-[11px] font-semibold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 px-2.5 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/80 flex items-center gap-1"
                         >
-                          <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                          <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                           {s}
                         </span>
                       ))}
@@ -197,7 +197,7 @@ export default function StudentCredentialsPage() {
                 </div>
               </div>
 
-              <div className="bg-slate-50 border-t border-slate-100 p-3 px-6 text-[11px] font-mono text-slate-500 flex flex-wrap items-center justify-between gap-2">
+              <div className="bg-slate-50 dark:bg-slate-900/60 border-t border-slate-100 dark:border-slate-800 p-3 px-6 text-[11px] font-mono text-slate-500 dark:text-slate-400 flex flex-wrap items-center justify-between gap-2">
                 <span>TX: {cred.txHash.slice(0, 22)}...</span>
                 <span>IPFS: {cred.ipfsHash}</span>
               </div>
@@ -215,7 +215,7 @@ export default function StudentCredentialsPage() {
           description="Send this public verification URL to recruiters, hiring managers, or embed on your portfolio."
         >
           <div className="space-y-4">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-mono break-all text-slate-700">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 p-3 text-xs font-mono break-all text-slate-700 dark:text-slate-200">
               {typeof window !== "undefined"
                 ? `${window.location.origin}/verify/${selectedCred.credentialId}`
                 : `https://proofhire.io/verify/${selectedCred.credentialId}`}

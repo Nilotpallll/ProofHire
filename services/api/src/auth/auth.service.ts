@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto, SeedLoginDto } from './dto/login.dto';
@@ -188,6 +188,10 @@ export class AuthService {
   }
 
   async seedLogin(dto: SeedLoginDto) {
+    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_SEED_AUTH !== 'true') {
+      throw new ForbiddenException('Demonstration seed login is strictly disabled in production environments.');
+    }
+
     const account = this.demoAccounts[dto.role];
     if (!account) {
       throw new BadRequestException('Invalid seed role');

@@ -243,8 +243,8 @@ export default function RecruiterJobsPage() {
                       onClick={() => toggleJobStatus(job)}
                       className={`text-xs px-2.5 py-1.5 rounded-lg border font-medium flex items-center gap-1 transition-colors ${
                         job.status === "OPEN"
-                          ? "border-rose-200 text-rose-700 hover:bg-rose-50"
-                          : "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                          ? "border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-300 dark:hover:bg-rose-950/40"
+                          : "border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
                       }`}
                     >
                       {job.status === "OPEN" ? (
@@ -279,14 +279,14 @@ export default function RecruiterJobsPage() {
           title={`Close Requisition: ${jobToClose.title}`}
         >
           <div className="space-y-4 py-2">
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+            <div className="p-3 bg-amber-50 border border-amber-200 dark:bg-amber-950/40 dark:border-amber-800 rounded-lg text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <span>
                 Closing this job requisition will immediately prevent any candidates from submitting new applications. Existing applicants can still be reviewed, interviewed, and advanced.
               </span>
             </div>
 
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
               Are you sure you want to close <strong>{jobToClose.title}</strong>? You can reopen it at any time.
             </p>
 

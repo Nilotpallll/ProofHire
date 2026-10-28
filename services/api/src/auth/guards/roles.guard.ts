@@ -22,6 +22,12 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('User is unauthenticated');
     }
 
+    if (user.status && user.status !== 'ACTIVE') {
+      throw new ForbiddenException(
+        `Account status is '${user.status}'. Access is restricted to active accounts.`,
+      );
+    }
+
     const hasRole = requiredRoles.includes(user.role);
     if (!hasRole) {
       throw new ForbiddenException(

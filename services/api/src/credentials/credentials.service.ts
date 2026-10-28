@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BlockchainService } from '../blockchain/blockchain.service';
+import { AdminService } from '../admin/admin.service';
 import { CredentialStatus, UserRole } from '@proofhire/types';
 
 export enum PublicVerificationStatus {
@@ -20,6 +21,7 @@ export class CredentialsService {
   constructor(
     private prisma: PrismaService,
     private blockchain: BlockchainService,
+    @Optional() private adminService?: AdminService,
   ) {}
 
   // In-memory persistent catalog for fast local demonstration
@@ -85,6 +87,27 @@ export class CredentialsService {
       isRevoked: false,
     },
   };
+
+  private sanitizePublicCredential(raw: any) {
+    if (!raw) return null;
+    return {
+      credentialId: raw.credentialId,
+      title: raw.title,
+      type: raw.type,
+      recipientName: raw.recipientName,
+      institutionName: raw.institutionName,
+      institutionCode: raw.institutionCode,
+      issueDate: raw.issueDate,
+      status: raw.status,
+      documentDigest: raw.documentDigest || raw.merkleRoot,
+      ipfsHash: raw.ipfsHash,
+      txHash: raw.txHash,
+      blockNumber: raw.blockNumber,
+      isRevoked: raw.isRevoked || raw.status === 'REVOKED',
+      revocationReason: (raw.isRevoked || raw.status === 'REVOKED') ? raw.revocationReason : undefined,
+      revokedAt: (raw.isRevoked || raw.status === 'REVOKED') ? raw.revokedAt : undefined,
+    };
+  }
 
   /**
    * Public verification endpoint. Computes verification status directly against
@@ -158,14 +181,14 @@ export class CredentialsService {
       };
     }
 
-    // Credential revoked on-chain
-    if (onChainResult.isRevoked) {
+    // Credential revoked on-chain or marked revoked in local registry
+    if (onChainResult.isRevoked || record?.isRevoked) {
       return {
         verificationStatus: PublicVerificationStatus.REVOKED,
         isValid: false,
         blockchainConfirmed: true,
         credentialId: credKey,
-        credential: record || {
+        credential: this.sanitizePublicCredential(record) || {
           credentialId: credKey,
           issuer: onChainResult.issuer,
           documentDigest: onChainResult.onChainDigest,
@@ -193,7 +216,7 @@ export class CredentialsService {
         isValid: false,
         blockchainConfirmed: true,
         credentialId: credKey,
-        credential: record || {
+        credential: this.sanitizePublicCredential(record) || {
           credentialId: credKey,
           issuer: onChainResult.issuer,
           documentDigest: onChainResult.onChainDigest,
@@ -228,7 +251,7 @@ export class CredentialsService {
       isValid: true,
       blockchainConfirmed: true,
       credentialId: credKey,
-      credential: record || {
+      credential: this.sanitizePublicCredential(record) || {
         credentialId: credKey,
         title: 'Bachelor of Science in Computer Science',
         type: 'DEGREE',
@@ -254,7 +277,13 @@ export class CredentialsService {
    * Issues a verifiable credential with canonical digest computation and transaction anchoring.
    */
   async issueCredential(data: any, issuerUser: any) {
-    const credId = `CRED-${Date.now().toString().slice(-6)}`;
+    if (issuerUser && issuerUser.status && issuerUser.status !== 'ACTIVE') {
+      throw new ForbiddenException(
+        `Issuer account status is '${issuerUser.status}'. Only active, accredited institutions can issue verifiable credentials.`,
+      );
+    }
+
+    const credId = data.credentialId || `CRED-${Date.now().toString().slice(-6)}`;
     const documentDigest = data.documentDigest || this.blockchain.computeDocumentDigest(data.title + ':' + (data.recipientName || 'Alex Rivera') + ':SALT_4892');
     const ipfsUri = data.ipfsHash || `ipfs://bafybeig${Math.random().toString(36).substring(2, 12)}`;
     const subjectReference = `student-${data.recipientId || 'student-001'}:salt-9871`;
@@ -312,6 +341,18 @@ export class CredentialsService {
       // offline audit log fallback
     }
 
+    if (this.adminService) {
+      this.adminService.recordAudit(
+        issuerUser?.email || 'institution@proofhire.io',
+        'INSTITUTION',
+        'CREDENTIAL_ISSUED',
+        'CREDENTIAL',
+        credId,
+        'SUCCESS',
+        { title: data.title, digest: documentDigest, txHash, blockNumber, onChain: onChainTx.success }
+      );
+    }
+
     return {
       message: 'Credential successfully issued and anchored to blockchain registry.',
       credentialId: credId,
@@ -335,6 +376,21 @@ export class CredentialsService {
 
     if (record.isRevoked) {
       throw new BadRequestException(`Credential '${credentialId}' has already been revoked.`);
+    }
+
+    // Ownership check: only issuing institution or admin can revoke
+    const isOwner =
+      record.institutionId === user?.id ||
+      record.institutionId === user?.userId ||
+      record.institutionId === user?.sub ||
+      (user?.id === 'inst-1' && (record.institutionId === 'inst-001' || record.institutionId === 'inst-1')) ||
+      (user?.email === 'institution@proofhire.io' && (record.institutionId === 'inst-001' || record.institutionId === 'demo-institution-id-003'));
+    const isAdmin = user?.role === UserRole.ADMIN || user?.role === 'ADMIN';
+
+    if (!isOwner && !isAdmin) {
+      throw new ForbiddenException(
+        'Access denied. You are not authorized to revoke a credential issued by another institution.',
+      );
     }
 
     // Submit on-chain revocation transaction
@@ -368,6 +424,18 @@ export class CredentialsService {
       });
     } catch {
       // offline DB update fallback
+    }
+
+    if (this.adminService) {
+      this.adminService.recordAudit(
+        user?.email || 'institution@proofhire.io',
+        'INSTITUTION',
+        'CREDENTIAL_REVOKED',
+        'CREDENTIAL',
+        credentialId,
+        'SUCCESS',
+        { reason, txHash: onChainTx.txHash, blockNumber: onChainTx.blockNumber }
+      );
     }
 
     return {

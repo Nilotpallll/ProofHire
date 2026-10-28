@@ -1,0 +1,26 @@
+================================================================================
+                       STANFORD UNIVERSITY
+                    SCHOOL OF ENGINEERING
+================================================================================
+
+This is to certify that
+
+                            FORGER MALICE
+
+having completed the prescribed curriculum with distinguished academic excellence
+is hereby conferred the degree of
+
+              BACHELOR OF SCIENCE IN COMPUTER SCIENCE
+                      (Summa Cum Laude - GPA 4.00)
+
+with all honors, rights, and privileges pertaining thereto.
+
+Credential Identifier : CRED-STANFORD-2025-001
+Conferral Date        : June 15, 2025
+Accredited Registrar  : Dr. Marcus Vance, Dean of Engineering
+Cryptographic Anchor  : Keccak-256 Verified On-Chain
+Registry Contract     : 0x5FbDB2315678afecb367f032d93F642f64180aa3
+
+================================================================================
+                  ACADEMIC & PROFESSIONAL CREDENTIAL RECORD
+================================================================================

@@ -41,8 +41,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         throw new UnauthorizedException('Account has been suspended');
       }
 
+      if (user.status === 'REJECTED') {
+        throw new UnauthorizedException('Account registration has been rejected');
+      }
+
       return user;
-    } catch {
+    } catch (err) {
+      if (err instanceof UnauthorizedException) {
+        throw err;
+      }
       return {
         id: payload.sub,
         email: payload.email,

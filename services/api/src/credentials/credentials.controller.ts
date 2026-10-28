@@ -24,7 +24,9 @@ export class CredentialsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all credentials on the registry' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List all credentials on the registry (Authenticated users only)' })
   async getAllCredentials() {
     return this.credentialsService.getAllCredentials();
   }

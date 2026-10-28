@@ -28,6 +28,7 @@ export default function InstitutionCredentialsListPage() {
   const [selectedCred, setSelectedCred] = React.useState<any>(null);
   const [revokeReason, setRevokeReason] = React.useState("");
   const [revoking, setRevoking] = React.useState(false);
+  const [revokeError, setRevokeError] = React.useState<string | null>(null);
 
   const [credentials, setCredentials] = React.useState([
     {
@@ -69,31 +70,63 @@ export default function InstitutionCredentialsListPage() {
     },
   ]);
 
+  React.useEffect(() => {
+    async function loadCreds() {
+      try {
+        const data = await api.credentials.list();
+        if (data && data.length > 0) {
+          setCredentials(
+            data.map((c: any) => ({
+              id: c.id,
+              credentialId: c.credentialId,
+              title: c.title,
+              recipient: c.recipientName || "Alex Rivera",
+              studentEmail: c.recipientEmail || "student@proofhire.io",
+              issueDate: c.issueDate
+                ? new Date(c.issueDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+                : "June 15, 2025",
+              type: c.type || "DEGREE",
+              status: c.isRevoked || c.status === "REVOKED" ? "REVOKED" : "ISSUED",
+              txHash: c.txHash || "0x0",
+              grade: c.gradeOrScore || "Passed with Distinction",
+              revocationReason: c.revocationReason,
+            }))
+          );
+        }
+      } catch (e) {
+        console.warn("Using offline demo credentials fallback:", e);
+      }
+    }
+    loadCreds();
+  }, []);
+
   const handleOpenRevoke = (cred: any) => {
     setSelectedCred(cred);
     setRevokeReason("");
+    setRevokeError(null);
     setRevokeModalOpen(true);
   };
 
   const handleConfirmRevoke = async () => {
     if (!revokeReason.trim() || !selectedCred) return;
     setRevoking(true);
+    setRevokeError(null);
 
     try {
       await api.credentials.revoke(selectedCred.credentialId, revokeReason);
-    } catch {
-      // local fallback
+      setCredentials((prev) =>
+        prev.map((c) =>
+          c.credentialId === selectedCred.credentialId
+            ? { ...c, status: "REVOKED", revocationReason: revokeReason }
+            : c
+        )
+      );
+      setRevokeModalOpen(false);
+    } catch (err: any) {
+      setRevokeError(err?.message || "Failed to submit on-chain revocation transaction.");
+    } finally {
+      setRevoking(false);
     }
-
-    setCredentials((prev) =>
-      prev.map((c) =>
-        c.credentialId === selectedCred.credentialId
-          ? { ...c, status: "REVOKED", revocationReason: revokeReason }
-          : c
-      )
-    );
-    setRevoking(false);
-    setRevokeModalOpen(false);
   };
 
   const filtered = credentials.filter((c) => {
@@ -151,25 +184,25 @@ export default function InstitutionCredentialsListPage() {
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded border border-brand-200">
+                    <span className="text-xs font-mono font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded border border-brand-200 dark:bg-brand-950/60 dark:border-brand-800 dark:text-brand-300">
                       {cred.credentialId}
                     </span>
                     <CredentialStatusIndicator status={cred.status as any} />
-                    <span className="text-xs font-semibold text-slate-500">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                       {cred.type}
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-slate-900">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                     {cred.title}
                   </h3>
 
-                  <p className="text-xs text-slate-600">
-                    Conferred upon <strong>{cred.recipient}</strong> ({cred.studentEmail}) • {cred.issueDate} • {cred.grade}
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    Conferred upon <strong className="text-slate-900 dark:text-slate-200">{cred.recipient}</strong> ({cred.studentEmail}) • {cred.issueDate} • {cred.grade}
                   </p>
 
                   {cred.status === "REVOKED" && cred.revocationReason && (
-                    <div className="rounded-lg bg-red-50 p-2.5 border border-red-200 text-xs text-red-800 font-medium">
+                    <div className="rounded-lg bg-red-50 dark:bg-red-950/50 p-2.5 border border-red-200 dark:border-red-900/60 text-xs text-red-800 dark:text-red-200 font-medium">
                       Revocation Reason: &quot;{cred.revocationReason}&quot;
                     </div>
                   )}
@@ -207,15 +240,22 @@ export default function InstitutionCredentialsListPage() {
           description={`Permanently revoke ${selectedCred.credentialId} issued to ${selectedCred.recipient}`}
         >
           <div className="space-y-4">
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-800 space-y-1">
-              <p className="font-bold">Irreversible Action Warning:</p>
+            {revokeError && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-950/40 p-3.5 text-xs text-rose-800 dark:text-rose-200">
+                {revokeError}
+              </div>
+            )}
+            <div className="rounded-xl border border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/40 p-4 text-xs text-red-800 dark:text-red-200 space-y-1">
+              <p className="font-bold flex items-center gap-1.5">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" /> Irreversible Action Warning:
+              </p>
               <p>
                 Revocation is written directly to the Ethereum smart contract. Any employer or verifier attempting to inspect this hash in the future will immediately see it marked as REVOKED.
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 Official Rationale / Audit Notes
               </label>
               <textarea
@@ -223,7 +263,7 @@ export default function InstitutionCredentialsListPage() {
                 placeholder="State the academic integrity, disciplinary, or administrative basis..."
                 value={revokeReason}
                 onChange={(e) => setRevokeReason(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
                 required
               />
             </div>

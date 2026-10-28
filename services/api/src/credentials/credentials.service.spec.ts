@@ -16,14 +16,19 @@ describe('CredentialsService & Cryptographic Verification', () => {
     },
   };
 
+  const revokedIds = new Set<string>(['revoked-demo-cred']);
   const mockBlockchain = {
     verifyCredentialOnChain: jest.fn().mockImplementation(async (id: string, digest?: string) => {
-      const isRev = id.toLowerCase().includes('revoked');
+      const isRev = id.toLowerCase().includes('revoked') || revokedIds.has(id.toLowerCase());
+      const validDigest = '0x8f2d59a781b01c1074a382ec297838e4a9e2293414995a56093d5673a9ebcf29';
+      const digestMatches = !digest || digest.toLowerCase() === validDigest.toLowerCase();
       return {
         isValid: !isRev,
         exists: true,
         isRevoked: isRev,
-        digestMatches: true,
+        digestMatches,
+        onChainDigest: validDigest,
+        revocationReason: isRev ? 'Administrative correction of major specialization' : undefined,
         issuer: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
         issuedAt: Math.floor(Date.now() / 1000) - 3600,
         isRpcLive: true,
@@ -31,6 +36,19 @@ describe('CredentialsService & Cryptographic Verification', () => {
     }),
     computeDocumentDigest: jest.fn().mockReturnValue('0x8f2d59a781b01c1074a382ec297838e4a9e2293414995a56093d5673a9ebcf29'),
     getContractAddress: jest.fn().mockReturnValue('0x5FbDB2315678afecb367f032d93F642f64180aa3'),
+    issueCredentialOnChain: jest.fn().mockResolvedValue({
+      success: true,
+      txHash: '0x3c990a56e5223a4b64c18c99277d337f75eb1432c253457a4e69b0faee2ef124',
+      blockNumber: 4892110,
+    }),
+    revokeCredentialOnChain: jest.fn().mockImplementation(async (id: string, reason: string) => {
+      revokedIds.add(id.toLowerCase());
+      return {
+        success: true,
+        txHash: '0x7b11c90a1492a54b38d19a99781b456e72cb1531e253998a4e69c0faee2a991b',
+        blockNumber: 4892115,
+      };
+    }),
   };
 
   beforeEach(async () => {
