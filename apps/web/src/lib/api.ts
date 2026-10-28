@@ -150,6 +150,19 @@ export const api = {
       }
       return res.json();
     },
+
+    async seedLogin(role: "STUDENT" | "RECRUITER" | "INSTITUTION" | "ADMIN"): Promise<LoginResponse> {
+      const res = await fetch(`${API_BASE}/auth/seed-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.message || `Seed login failed (${res.status})`);
+      }
+      return res.json();
+    },
   },
 
   // Credentials Verification & Issuance

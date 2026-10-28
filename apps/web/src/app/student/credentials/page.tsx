@@ -120,15 +120,15 @@ export default function StudentCredentialsPage() {
           <Tabs
             tabs={[
               { id: "ALL", label: "All Credentials", badge: credentials.length },
-              { id: "DEGREE", label: "Degrees", badge: 1 },
-              { id: "CERTIFICATE", label: "Certificates", badge: 1 },
+              { id: "DEGREE", label: "Degrees", badge: credentials.filter((c) => c.type === "DEGREE").length },
+              { id: "CERTIFICATE", label: "Certificates", badge: credentials.filter((c) => c.type === "CERTIFICATE").length },
             ]}
             activeTab={activeTab}
             onChange={setActiveTab}
             variant="pills"
           />
 
-          <Link href="/verify/demo-credential">
+          <Link href="/verify">
             <Button variant="outline" size="sm" leftIcon={<ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />}>
               Test Verifier Tool
             </Button>

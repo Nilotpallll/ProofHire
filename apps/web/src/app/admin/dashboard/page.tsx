@@ -93,8 +93,8 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard
             title="Registered Platform Users"
-            value={userCount > 0 ? userCount.toString() : "1,240"}
-            change={userCount > 0 ? `${userCount} active platform users` : "+84 this week"}
+            value={loading ? "..." : (userCount > 0 ? userCount.toString() : "0")}
+            change={loading ? "Loading..." : `${userCount} active platform users`}
             trend="up"
             subtitle="Students, Recruiters & Admins"
             icon={<Users className="h-5 w-5 text-brand-600" />}

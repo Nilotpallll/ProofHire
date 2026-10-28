@@ -48,6 +48,7 @@ class ParsedResumeResponse(BaseModel):
     projects: list[ProjectItem] = Field(default_factory=list)
     certifications: list[str] = Field(default_factory=list)
     links: list[str] = Field(default_factory=list)
+    rawText: str | None = None
     rawTextExcerpt: str | None = None
     extractionConfidence: float = Field(default=0.85, ge=0.0, le=1.0)
     fileFormat: str

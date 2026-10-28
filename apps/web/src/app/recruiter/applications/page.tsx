@@ -142,6 +142,7 @@ export default function RecruiterApplicationsPage() {
   const [rejectReason, setRejectReason] = React.useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
   const [noteInput, setNoteInput] = React.useState("");
+  const [actionError, setActionError] = React.useState<string | null>(null);
   const [applications, setApplications] = React.useState<ApplicationItem[]>(DEFAULT_APPLICATIONS);
 
   React.useEffect(() => {
@@ -211,51 +212,53 @@ export default function RecruiterApplicationsPage() {
     }
 
     setIsUpdatingStatus(true);
+    setActionError(null);
     try {
       await api.applications.updateStatus(id, newStatus);
-    } catch (e) {
-      console.warn("API status update warning:", e);
+      setApplications((prev) =>
+        prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
+      );
+    } catch (e: any) {
+      setActionError(e?.message || "Failed to update application status.");
     } finally {
       setIsUpdatingStatus(false);
     }
-    setApplications((prev) =>
-      prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
-    );
   };
 
   const handleConfirmRejection = async () => {
     if (!rejectingApp) return;
     setIsUpdatingStatus(true);
+    setActionError(null);
     try {
       await api.applications.updateStatus(rejectingApp.id, "REJECTED", rejectReason || "Not selected at this stage");
-    } catch (e) {
-      console.warn("API status update warning:", e);
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === rejectingApp.id ? { ...app, status: "REJECTED", recruiterNotes: rejectReason || app.recruiterNotes } : app
+        )
+      );
+      setRejectingApp(null);
+    } catch (e: any) {
+      setActionError(e?.message || "Failed to reject application.");
     } finally {
       setIsUpdatingStatus(false);
     }
-
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === rejectingApp.id ? { ...app, status: "REJECTED", recruiterNotes: rejectReason || app.recruiterNotes } : app
-      )
-    );
-    setRejectingApp(null);
   };
 
   const handleSaveNote = async () => {
     if (selectedAppForNote) {
+      setActionError(null);
       try {
         await api.applications.updateStatus(selectedAppForNote.id, selectedAppForNote.status, noteInput);
-      } catch (e) {
-        console.warn("API note update warning:", e);
+        setApplications((prev) =>
+          prev.map((app) =>
+            app.id === selectedAppForNote.id ? { ...app, recruiterNotes: noteInput } : app
+          )
+        );
+        setSelectedAppForNote(null);
+        setNoteInput("");
+      } catch (e: any) {
+        setActionError(e?.message || "Failed to save recruiter note.");
       }
-      setApplications((prev) =>
-        prev.map((app) =>
-          app.id === selectedAppForNote.id ? { ...app, recruiterNotes: noteInput } : app
-        )
-      );
-      setSelectedAppForNote(null);
-      setNoteInput("");
     }
   };
 
@@ -290,6 +293,21 @@ export default function RecruiterApplicationsPage() {
             </p>
           </div>
         </div>
+
+        {actionError && (
+          <div className="p-4 bg-rose-50 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-800 rounded-xl text-xs font-semibold text-rose-800 dark:text-rose-200 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
+              <span>{actionError}</span>
+            </div>
+            <button
+              onClick={() => setActionError(null)}
+              className="text-rose-600 hover:text-rose-800 font-bold"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         <Tabs
           tabs={[

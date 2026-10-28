@@ -68,7 +68,7 @@ export class CredentialsService {
     },
     'CRED-STANFORD-2025-001': {
       id: 'cred-001',
-      credentialId: 'cred-demo-stanford-cs-2025',
+      credentialId: 'CRED-STANFORD-2025-001',
       title: 'Bachelor of Science in Computer Science',
       type: 'DEGREE',
       recipientId: 'student-001',
@@ -78,13 +78,35 @@ export class CredentialsService {
       institutionCode: 'STANFORD-CS',
       issueDate: '2025-06-15T00:00:00.000Z',
       status: 'ISSUED',
-      documentDigest: '0x986d9cecefd8acab7734adee7df798bcdae27cff525f0da260c0c2d3c2b120af',
+      documentDigest: '0x8f2d59a781b01c1074a382ec297838e4a9e2293414995a56093d5673a9ebcf29',
       ipfsHash: 'ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi',
       txHash: '0x3c990a56e5223a4b64c18c99277d337f75eb1432c253457a4e69b0faee2ef124',
       blockNumber: 1,
       gradeOrScore: 'GPA 3.92 (Summa Cum Laude)',
       skills: ['Distributed Systems', 'Cryptography', 'Full-Stack Architecture', 'PostgreSQL'],
       isRevoked: false,
+    },
+    'REVOKED-DEMO-CRED': {
+      id: 'cred-002',
+      credentialId: 'REVOKED-DEMO-CRED',
+      title: 'Honorary Web Engineering Certificate',
+      type: 'CERTIFICATE',
+      recipientId: 'student-002',
+      recipientName: 'John Doe',
+      institutionId: 'inst-001',
+      institutionName: 'Stanford University (Accredited)',
+      institutionCode: 'STANFORD-CS',
+      issueDate: '2024-05-10T00:00:00.000Z',
+      status: 'REVOKED',
+      documentDigest: '0xbad0000000000000000000000000000000000000000000000000000000000bad',
+      ipfsHash: 'ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi',
+      txHash: '0x892a014238e894b64c18c99277d337f75eb1432c253457a4e69b0faee2ef124',
+      blockNumber: 1,
+      gradeOrScore: 'Audited',
+      skills: ['HTML', 'CSS', 'JavaScript'],
+      isRevoked: true,
+      revocationReason: 'Academic integrity breach identified upon post-issuance audit',
+      revokedAt: '2025-01-12T00:00:00.000Z',
     },
   };
 
@@ -296,11 +318,8 @@ export class CredentialsService {
       ipfsUri,
     );
 
-    const txHash = onChainTx.success && onChainTx.txHash
-      ? onChainTx.txHash
-      : `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-
-    const blockNumber = onChainTx.success && onChainTx.blockNumber ? onChainTx.blockNumber : 1;
+    const txHash = onChainTx.success && onChainTx.txHash ? onChainTx.txHash : undefined;
+    const blockNumber = onChainTx.success && onChainTx.blockNumber ? onChainTx.blockNumber : undefined;
 
     const newRecord = {
       id: `cred-${Date.now()}`,

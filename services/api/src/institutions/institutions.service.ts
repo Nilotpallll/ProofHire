@@ -72,29 +72,29 @@ export class InstitutionsService {
 
   async approveInstitution(id: string) {
     const inst = this.demoInstitutions.find((i) => i.id === id);
-    if (inst) {
-      inst.status = 'APPROVED';
-      (inst as any).verifiedAt = new Date().toISOString();
-      return inst;
+    if (!inst) {
+      throw new NotFoundException(`Institution with ID '${id}' not found.`);
     }
-    return { id, status: 'APPROVED' };
+    inst.status = 'APPROVED';
+    (inst as any).verifiedAt = new Date().toISOString();
+    return inst;
   }
 
   async rejectInstitution(id: string) {
     const inst = this.demoInstitutions.find((i) => i.id === id);
-    if (inst) {
-      inst.status = 'REJECTED';
-      return inst;
+    if (!inst) {
+      throw new NotFoundException(`Institution with ID '${id}' not found.`);
     }
-    return { id, status: 'REJECTED' };
+    inst.status = 'REJECTED';
+    return inst;
   }
 
   async suspendInstitution(id: string) {
     const inst = this.demoInstitutions.find((i) => i.id === id);
-    if (inst) {
-      inst.status = 'SUSPENDED';
-      return inst;
+    if (!inst) {
+      throw new NotFoundException(`Institution with ID '${id}' not found.`);
     }
-    return { id, status: 'SUSPENDED' };
+    inst.status = 'SUSPENDED';
+    return inst;
   }
 }

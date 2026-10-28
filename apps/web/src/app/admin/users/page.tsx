@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Tabs } from "@/components/ui/Tabs";
 import { Modal } from "@/components/ui/Modal";
-import { Users, Search, ShieldCheck, UserCheck, UserX, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Users, Search, ShieldCheck, UserCheck, UserX, AlertTriangle, AlertCircle, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 
 const DEFAULT_USERS = [
@@ -66,6 +66,7 @@ export default function AdminUsersPage() {
   } | null>(null);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [auditMessage, setAuditMessage] = React.useState<string | null>(null);
+  const [actionError, setActionError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     async function loadUsers() {
@@ -103,21 +104,21 @@ export default function AdminUsersPage() {
     if (!userToModify) return;
     const newStatus = userToModify.currentStatus === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
     setIsUpdating(true);
+    setActionError(null);
 
     try {
       await api.admin.updateUserStatus(userToModify.id, newStatus as any);
-    } catch (e) {
-      console.warn("API updateUserStatus warning:", e);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userToModify.id ? { ...u, status: newStatus } : u))
+      );
+      setAuditMessage(`Account for "${userToModify.name}" has been ${newStatus.toLowerCase()}.`);
+      setUserToModify(null);
+      setTimeout(() => setAuditMessage(null), 4000);
+    } catch (e: any) {
+      setActionError(e?.message || `Failed to update status for ${userToModify.name}.`);
     } finally {
       setIsUpdating(false);
     }
-
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userToModify.id ? { ...u, status: newStatus } : u))
-    );
-    setAuditMessage(`Account for "${userToModify.name}" has been ${newStatus.toLowerCase()}.`);
-    setUserToModify(null);
-    setTimeout(() => setAuditMessage(null), 4000);
   };
 
   const filtered = users.filter((u) => {
@@ -145,6 +146,21 @@ export default function AdminUsersPage() {
           >
             <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             {auditMessage}
+          </div>
+        )}
+
+        {actionError && (
+          <div className="p-4 bg-rose-50 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-800 rounded-xl text-xs font-semibold text-rose-800 dark:text-rose-200 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
+              <span>{actionError}</span>
+            </div>
+            <button
+              onClick={() => setActionError(null)}
+              className="text-rose-600 hover:text-rose-800 font-bold"
+            >
+              Dismiss
+            </button>
           </div>
         )}
 

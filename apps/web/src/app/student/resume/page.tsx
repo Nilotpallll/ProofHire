@@ -180,12 +180,13 @@ EXPERIENCE & PROJECTS:
         return;
       }
 
-      if (parsedData.rawTextExcerpt) {
-        setResumeText(parsedData.rawTextExcerpt);
+      const fullExtractedText = parsedData.rawText || parsedData.rawTextExcerpt || "";
+      if (fullExtractedText) {
+        setResumeText(fullExtractedText);
       }
 
       const result = await api.ai.analyze(
-        parsedData.rawTextExcerpt || resumeText,
+        fullExtractedText || resumeText,
         "",
         verifiedSkills
       );

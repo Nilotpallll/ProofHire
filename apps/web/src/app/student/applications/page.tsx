@@ -101,6 +101,8 @@ const DEFAULT_STUDENT_APPS: ApplicationRecord[] = [
 export default function StudentApplicationsPage() {
   const [appToWithdraw, setAppToWithdraw] = React.useState<ApplicationRecord | null>(null);
   const [applications, setApplications] = React.useState<ApplicationRecord[]>(DEFAULT_STUDENT_APPS);
+  const [withdrawError, setWithdrawError] = React.useState<string | null>(null);
+  const [isWithdrawing, setIsWithdrawing] = React.useState(false);
 
   React.useEffect(() => {
     async function loadMyApps() {
@@ -129,12 +131,11 @@ export default function StudentApplicationsPage() {
   }, []);
 
   const confirmWithdraw = async () => {
-    if (appToWithdraw) {
-      try {
-        await api.applications.withdraw(appToWithdraw.id);
-      } catch (e) {
-        console.warn("API withdraw failed, updating local state:", e);
-      }
+    if (!appToWithdraw) return;
+    setIsWithdrawing(true);
+    setWithdrawError(null);
+    try {
+      await api.applications.withdraw(appToWithdraw.id);
       setApplications((prev) =>
         prev.map((a) =>
           a.id === appToWithdraw.id
@@ -148,6 +149,10 @@ export default function StudentApplicationsPage() {
         )
       );
       setAppToWithdraw(null);
+    } catch (e: any) {
+      setWithdrawError(e?.message || "Failed to withdraw application. Please try again.");
+    } finally {
+      setIsWithdrawing(false);
     }
   };
 
@@ -277,10 +282,19 @@ export default function StudentApplicationsPage() {
       {appToWithdraw && (
         <Modal
           isOpen={true}
-          onClose={() => setAppToWithdraw(null)}
+          onClose={() => {
+            setAppToWithdraw(null);
+            setWithdrawError(null);
+          }}
           title={`Withdraw Application: ${appToWithdraw.jobTitle}`}
         >
           <div className="space-y-4 py-2">
+            {withdrawError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+                <span>{withdrawError}</span>
+              </div>
+            )}
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-900 flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
               <span>
@@ -293,16 +307,25 @@ export default function StudentApplicationsPage() {
             </p>
 
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" size="sm" onClick={() => setAppToWithdraw(null)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setAppToWithdraw(null);
+                  setWithdrawError(null);
+                }}
+                disabled={isWithdrawing}
+              >
                 Keep Application
               </Button>
               <Button
                 variant="primary"
                 size="sm"
                 onClick={confirmWithdraw}
+                disabled={isWithdrawing}
                 className="bg-rose-600 hover:bg-rose-700"
               >
-                Confirm Withdrawal
+                {isWithdrawing ? "Withdrawing..." : "Confirm Withdrawal"}
               </Button>
             </div>
           </div>

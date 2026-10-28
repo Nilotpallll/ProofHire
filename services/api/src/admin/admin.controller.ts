@@ -18,12 +18,12 @@ import { UserRole } from '@proofhire/types';
 @ApiTags('Admin')
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
 @ApiBearerAuth()
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('users')
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Search and filter registered users across all roles (Admin only)' })
   @ApiQuery({ name: 'search', required: false, description: 'Search name or email' })
   @ApiQuery({ name: 'role', required: false, enum: ['STUDENT', 'RECRUITER', 'INSTITUTION', 'ADMIN'] })
@@ -37,6 +37,7 @@ export class AdminController {
   }
 
   @Patch('users/:id/status')
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Update user account status with mandatory audit log (Admin only)' })
   @ApiResponse({ status: 200, description: 'User account status updated and audited' })
   updateUserStatus(
@@ -48,7 +49,8 @@ export class AdminController {
   }
 
   @Get('audit-logs')
-  @ApiOperation({ summary: 'Search immutable platform security and action audit logs (Admin only)' })
+  @Roles(UserRole.ADMIN, UserRole.INSTITUTION)
+  @ApiOperation({ summary: 'Search immutable platform security and action audit logs (Admins & Institutions)' })
   @ApiQuery({ name: 'query', required: false })
   @ApiQuery({ name: 'entityType', required: false })
   @ApiQuery({ name: 'action', required: false })
@@ -61,6 +63,7 @@ export class AdminController {
   }
 
   @Get('analytics')
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Get aggregate platform metrics, verification throughput, and health (Admin only)' })
   getAnalytics() {
     return this.adminService.getAnalytics();

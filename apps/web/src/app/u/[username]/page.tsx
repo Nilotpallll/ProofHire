@@ -28,14 +28,10 @@ import {
   UserCheck,
 } from "lucide-react";
 
-export default function PublicStudentProfilePage() {
-  const params = useParams();
-  const rawUsername = params?.username as string;
-  const username = decodeURIComponent(rawUsername || "alexrivera");
+import { api } from "@/lib/api";
 
-  const [copiedLink, setCopiedLink] = React.useState(false);
-
-  const student = {
+const PRESET_PROFILES: Record<string, any> = {
+  alexrivera: {
     name: "Alex Rivera",
     username: "alexrivera",
     headline: "Senior Software Engineer & Distributed Consensus Researcher",
@@ -48,8 +44,6 @@ export default function PublicStudentProfilePage() {
     githubUrl: "https://github.com/alexrivera-demo",
     linkedinUrl: "https://linkedin.com/in/alexrivera-demo",
     portfolioUrl: "https://alexrivera.dev",
-    
-    // Explicit differentiation of skill tiers
     verifiedSkills: [
       { name: "Distributed Systems", source: "Stanford School of Engineering", credentialId: "CRED-STANFORD-2025-001" },
       { name: "Cryptography", source: "Stanford School of Engineering", credentialId: "CRED-STANFORD-2025-001" },
@@ -64,7 +58,6 @@ export default function PublicStudentProfilePage() {
       { name: "FastAPI", confidence: "High" },
     ],
     selfDeclaredSkills: ["GraphQL", "Tailwind CSS", "Jest", "CI/CD"],
-
     verifiedCredentials: [
       {
         id: "cred-001",
@@ -89,7 +82,6 @@ export default function PublicStudentProfilePage() {
         onChainNetwork: "Ethereum EVM / Polygon Amoy",
       },
     ],
-
     projects: [
       {
         name: "ProofHire Credential Protocol",
@@ -104,7 +96,217 @@ export default function PublicStudentProfilePage() {
         github: "https://github.com/alexrivera-demo/zk-identity",
       },
     ],
-  };
+  },
+  student: {
+    name: "Alex Rivera",
+    username: "student",
+    headline: "Software Engineer & Distributed Systems Researcher",
+    bio: "Passionate about decentralized systems, smart contracts, and high-performance Web3 frontends. B.S. in Computer Science with Honors from Stanford University.",
+    university: "Stanford University",
+    major: "Computer Science",
+    graduationYear: 2025,
+    gpa: "3.92",
+    location: "San Francisco, CA",
+    githubUrl: "https://github.com/alexrivera-demo",
+    linkedinUrl: "https://linkedin.com/in/alexrivera-demo",
+    portfolioUrl: "https://alexrivera.dev",
+    verifiedSkills: [
+      { name: "Distributed Systems", source: "Stanford School of Engineering", credentialId: "CRED-STANFORD-2025-001" },
+      { name: "Cryptography", source: "Stanford School of Engineering", credentialId: "CRED-STANFORD-2025-001" },
+    ],
+    resumeExtractedSkills: [
+      { name: "TypeScript", confidence: "High" },
+      { name: "Next.js", confidence: "High" },
+      { name: "Solidity", confidence: "High" },
+      { name: "PostgreSQL", confidence: "High" },
+    ],
+    selfDeclaredSkills: ["GraphQL", "Tailwind CSS"],
+    verifiedCredentials: [
+      {
+        id: "cred-001",
+        credentialId: "CRED-STANFORD-2025-001",
+        title: "Bachelor of Science in Computer Science",
+        type: "DEGREE",
+        institution: "Stanford School of Engineering",
+        issueDate: "June 15, 2025",
+        grade: "GPA 3.92 (Summa Cum Laude)",
+        skills: ["Distributed Systems", "Cryptography", "PostgreSQL", "Full-Stack Development"],
+        onChainNetwork: "Ethereum EVM / Hardhat",
+      },
+    ],
+    projects: [
+      {
+        name: "ProofHire Credential Protocol",
+        description: "Decentralized registry smart contracts with privacy-preserving salted subject references.",
+        tags: ["Solidity", "Hardhat", "TypeScript"],
+        github: "https://github.com/alexrivera-demo/proofhire",
+      },
+    ],
+  },
+  mayapatel: {
+    name: "Maya Patel",
+    username: "mayapatel",
+    headline: "Full-Stack Web3 & Smart Contract Developer",
+    bio: "Electrical Engineering and Computer Science graduate from UC Berkeley. Built high-throughput DeFi lending protocols and full-stack React / Next.js interfaces.",
+    university: "UC Berkeley",
+    major: "Electrical Engineering and Computer Science",
+    graduationYear: 2024,
+    gpa: "3.86 (High Honors)",
+    location: "Berkeley, CA",
+    githubUrl: "https://github.com/mayapatel-demo",
+    linkedinUrl: "https://linkedin.com/in/mayapatel-demo",
+    portfolioUrl: "https://mayapatel.dev",
+    verifiedSkills: [
+      { name: "React", source: "UC Berkeley EECS", credentialId: "CRED-BERKELEY-2024-012" },
+      { name: "TypeScript", source: "UC Berkeley EECS", credentialId: "CRED-BERKELEY-2024-012" },
+      { name: "Solidity", source: "UC Berkeley Blockchain", credentialId: "CRED-BERKELEY-2024-012" },
+    ],
+    resumeExtractedSkills: [
+      { name: "Next.js", confidence: "High" },
+      { name: "Tailwind CSS", confidence: "High" },
+      { name: "Hardhat", confidence: "Medium" },
+    ],
+    selfDeclaredSkills: ["Ethers.js", "Docker", "Node.js"],
+    verifiedCredentials: [
+      {
+        id: "cred-003",
+        credentialId: "CRED-BERKELEY-2024-012",
+        title: "B.S. in Electrical Engineering & Computer Sciences",
+        type: "DEGREE",
+        institution: "UC Berkeley College of Engineering",
+        issueDate: "May 20, 2024",
+        grade: "GPA 3.86 (High Honors)",
+        skills: ["React", "TypeScript", "Solidity", "Algorithms"],
+        onChainNetwork: "Ethereum EVM / Sepolia",
+      },
+    ],
+    projects: [
+      {
+        name: "DeFi Automated Vault Protocol",
+        description: "Audited yield optimization and automated liquidations engine.",
+        tags: ["Solidity", "TypeScript", "Next.js"],
+        github: "https://github.com/mayapatel-demo/defi-vault",
+      },
+    ],
+  },
+  davidkim: {
+    name: "David Kim",
+    username: "davidkim",
+    headline: "AI & Machine Learning Infrastructure Engineer",
+    bio: "M.S. in Machine Learning from Carnegie Mellon University. Specializes in multimodal LLM extraction, vector search indexing, and high-throughput Python inference APIs.",
+    university: "Carnegie Mellon University",
+    major: "Machine Learning & Software Engineering",
+    graduationYear: 2025,
+    gpa: "3.95 (Summa Cum Laude)",
+    location: "Pittsburgh, PA / Remote",
+    githubUrl: "https://github.com/davidkim-demo",
+    linkedinUrl: "https://linkedin.com/in/davidkim-demo",
+    portfolioUrl: "https://davidkim.ai",
+    verifiedSkills: [
+      { name: "Python", source: "CMU School of Computer Science", credentialId: "CRED-CMU-2025-081" },
+      { name: "FastAPI", source: "CMU School of Computer Science", credentialId: "CRED-CMU-2025-081" },
+      { name: "PyTorch", source: "MIT Decentralized Media Lab", credentialId: "CRED-MIT-2025-089" },
+    ],
+    resumeExtractedSkills: [
+      { name: "Vector DBs", confidence: "High" },
+      { name: "Docker", confidence: "High" },
+      { name: "Kubernetes", confidence: "Medium" },
+    ],
+    selfDeclaredSkills: ["PostgreSQL", "FastAPI", "TensorFlow"],
+    verifiedCredentials: [
+      {
+        id: "cred-004",
+        credentialId: "CRED-CMU-2025-081",
+        title: "Master of Science in Machine Learning",
+        type: "DEGREE",
+        institution: "Carnegie Mellon University",
+        issueDate: "January 15, 2025",
+        grade: "GPA 3.95 (Summa Cum Laude)",
+        skills: ["Python", "FastAPI", "PyTorch", "Distributed Systems"],
+        onChainNetwork: "Ethereum EVM / Hardhat",
+      },
+    ],
+    projects: [
+      {
+        name: "Multimodal Document Intelligence Pipeline",
+        description: "Zero-shot document parsing and embedding retrieval with deterministic confidence rubrics.",
+        tags: ["Python", "FastAPI", "PyTorch", "ChromaDB"],
+        github: "https://github.com/davidkim-demo/doc-intel",
+      },
+    ],
+  },
+};
+
+export default function PublicStudentProfilePage() {
+  const params = useParams();
+  const rawUsername = params?.username as string;
+  const username = decodeURIComponent(rawUsername || "alexrivera").toLowerCase();
+
+  const [copiedLink, setCopiedLink] = React.useState(false);
+  const [student, setStudent] = React.useState(() => {
+    return PRESET_PROFILES[username] || PRESET_PROFILES.alexrivera;
+  });
+
+  React.useEffect(() => {
+    // 1. Resolve preset candidate profile
+    const preset = PRESET_PROFILES[username];
+    if (preset) {
+      setStudent(preset);
+    } else {
+      // Dynamic profile fallback
+      const formattedName = username
+        .replace(/[._-]/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+      setStudent({
+        name: formattedName,
+        username,
+        headline: "Verified Candidate on ProofHire Network",
+        bio: `Member profile of ${formattedName} verified on the ProofHire decentralized credential network.`,
+        university: "Accredited University Partner",
+        major: "Software & Systems Engineering",
+        graduationYear: 2025,
+        gpa: "Verified Standing",
+        location: "United States",
+        githubUrl: `https://github.com/${username}`,
+        linkedinUrl: `https://linkedin.com/in/${username}`,
+        portfolioUrl: `https://${username}.dev`,
+        verifiedSkills: [
+          { name: "Computer Science", source: "Accredited Institution", credentialId: "CRED-STANFORD-2025-001" },
+        ],
+        resumeExtractedSkills: [
+          { name: "TypeScript", confidence: "High" },
+          { name: "Full-Stack Development", confidence: "High" },
+        ],
+        selfDeclaredSkills: ["Git", "Agile"],
+        verifiedCredentials: [],
+        projects: [],
+      });
+    }
+
+    // 2. Check localStorage updates if viewing the student's own profile
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("proofhire_user");
+      const storedProfile = localStorage.getItem("proofhire_student_profile");
+      if (storedProfile && (username === "student" || username === "alexrivera")) {
+        try {
+          const p = JSON.parse(storedProfile);
+          setStudent((prev: any) => ({
+            ...prev,
+            name: p.name || prev.name,
+            headline: p.headline || prev.headline,
+            bio: p.bio || prev.bio,
+            university: p.university || prev.university,
+            major: p.major || prev.major,
+            graduationYear: p.gradYear || prev.graduationYear,
+            gpa: p.gpa || prev.gpa,
+            portfolioUrl: p.portfolioUrl || prev.portfolioUrl,
+            githubUrl: p.githubUrl || prev.githubUrl,
+            linkedinUrl: p.linkedinUrl || prev.linkedinUrl,
+          }));
+        } catch {}
+      }
+    }
+  }, [username]);
 
   const copyProfile = () => {
     if (typeof window !== "undefined") {
@@ -217,7 +419,7 @@ export default function PublicStudentProfilePage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              {student.verifiedCredentials.map((cred) => (
+              {student.verifiedCredentials.map((cred: any) => (
                 <div
                   key={cred.id}
                   className="rounded-xl border border-emerald-200 bg-white p-6 shadow-sm hover:border-emerald-300 transition-all space-y-4"
@@ -251,7 +453,7 @@ export default function PublicStudentProfilePage() {
                   </div>
 
                   <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-                    {cred.skills.map((s) => (
+                    {cred.skills.map((s: any) => (
                       <span
                         key={s}
                         className="text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded"
@@ -283,7 +485,7 @@ export default function PublicStudentProfilePage() {
                 <ShieldCheck className="h-4 w-4" /> 1. Institutionally Verified Competencies (Anchored On-Chain)
               </span>
               <div className="flex flex-wrap gap-2">
-                {student.verifiedSkills.map((sk) => (
+                {student.verifiedSkills.map((sk: any) => (
                   <Link
                     key={sk.name}
                     href={`/verify/${sk.credentialId}`}
@@ -304,7 +506,7 @@ export default function PublicStudentProfilePage() {
                 <FileCode className="h-4 w-4" /> 2. Resume-Extracted Technical Skills (NLP Evidence)
               </span>
               <div className="flex flex-wrap gap-2">
-                {student.resumeExtractedSkills.map((sk) => (
+                {student.resumeExtractedSkills.map((sk: any) => (
                   <span
                     key={sk.name}
                     className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-brand-50 border border-brand-200 text-brand-900 font-medium"
@@ -323,7 +525,7 @@ export default function PublicStudentProfilePage() {
                 <UserCheck className="h-4 w-4" /> 3. Self-Declared Competencies
               </span>
               <div className="flex flex-wrap gap-2">
-                {student.selfDeclaredSkills.map((sk) => (
+                {student.selfDeclaredSkills.map((sk: any) => (
                   <span
                     key={sk}
                     className="inline-flex items-center text-xs px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-medium"
@@ -343,7 +545,7 @@ export default function PublicStudentProfilePage() {
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {student.projects.map((proj) => (
+              {student.projects.map((proj: any) => (
                 <Card key={proj.name} className="p-5 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="text-sm font-bold text-slate-900">{proj.name}</h3>
@@ -360,7 +562,7 @@ export default function PublicStudentProfilePage() {
                     {proj.description}
                   </p>
                   <div className="flex flex-wrap gap-1 pt-1">
-                    {proj.tags.map((tag) => (
+                    {proj.tags.map((tag: any) => (
                       <span key={tag} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">
                         {tag}
                       </span>

@@ -129,7 +129,7 @@ export class AiService {
   /**
    * Evaluates resume claims against blockchain evidence.
    */
-  async checkClaims(claims: any[], availableEvidence: any[]) {
+  async checkClaims(claims: any[], availableEvidence: any[] = []) {
     try {
       const response = await fetch(`${this.aiServiceUrl}/api/v1/claims/check`, {
         method: 'POST',
@@ -141,21 +141,78 @@ export class AiService {
         return await response.json();
       }
     } catch {
-      this.logger.warn('AI claims check microservice unreachable. Using fallback evaluation.');
+      this.logger.warn('AI claims check microservice unreachable. Using local deterministic evaluation.');
     }
+
+    const evidenceMap = new Map(
+      (availableEvidence || []).map((e) => [(e.credentialId || '').toLowerCase(), e]),
+    );
+
+    let verifiedCount = 0;
+    let unverifiedCount = 0;
+    let revokedCount = 0;
+    let mismatchCount = 0;
+
+    const results = claims.map((c) => {
+      const credId = (c.credentialId || '').toLowerCase();
+      const evidence = credId ? evidenceMap.get(credId) : undefined;
+
+      if (!credId || !evidence) {
+        unverifiedCount++;
+        return {
+          claimText: c.claimText,
+          status: 'UNVERIFIED',
+          reason: 'No cryptographic on-chain anchor provided for this self-reported claim.',
+          recommendation: 'Conduct standard candidate interview or portfolio review.',
+        };
+      }
+
+      if (evidence.isRevoked) {
+        revokedCount++;
+        return {
+          claimText: c.claimText,
+          status: 'REVOKED',
+          reason: 'Associated on-chain credential was formally revoked by the issuing institution.',
+          recommendation: 'Credential is revoked and cannot be counted toward candidate qualification.',
+        };
+      }
+
+      if (c.documentHash && evidence.onChainDigest && c.documentHash.toLowerCase() !== evidence.onChainDigest.toLowerCase()) {
+        mismatchCount++;
+        return {
+          claimText: c.claimText,
+          status: 'DOCUMENT_MISMATCH',
+          reason: 'Submitted document digest does not match the on-chain Keccak-256 hash.',
+          recommendation: 'Request candidate upload original unaltered digital document.',
+        };
+      }
+
+      if (evidence.isValid) {
+        verifiedCount++;
+        return {
+          claimText: c.claimText,
+          status: 'VERIFIED',
+          reason: `Cryptographically verified on smart contract registry (${evidence.issuerName || 'Accredited Issuer'}).`,
+          recommendation: 'Highest trust level. Zero additional verification needed.',
+        };
+      }
+
+      unverifiedCount++;
+      return {
+        claimText: c.claimText,
+        status: 'UNVERIFIED',
+        reason: 'Credential identifier could not be validated on-chain.',
+        recommendation: 'Request verification from issuing institution.',
+      };
+    });
 
     return {
       totalClaimsChecked: claims.length,
-      verifiedCount: 1,
-      unverifiedCount: 0,
-      revokedCount: 0,
-      mismatchCount: 0,
-      results: claims.map((c) => ({
-        claimText: c.claimText,
-        status: 'VERIFIED',
-        reason: 'Cryptographically confirmed on smart contract registry.',
-        recommendation: 'Zero additional verification needed.',
-      })),
+      verifiedCount,
+      unverifiedCount,
+      revokedCount,
+      mismatchCount,
+      results,
       legalDisclaimer: 'Unverified status indicates that independent cryptographic proof was not provided on-chain.',
     };
   }

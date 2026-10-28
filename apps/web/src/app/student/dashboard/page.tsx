@@ -104,8 +104,8 @@ export default function StudentDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard
             title="Verified Credentials"
-            value={credentials.length > 0 ? credentials.length.toString() : "2"}
-            change={credentials.length > 0 ? `${credentials.length} verified on-chain` : "+1 this month"}
+            value={loading ? "..." : credentials.length.toString()}
+            change={loading ? "Loading..." : `${credentials.length} verified on-chain`}
             trend="up"
             subtitle="Anchored on-chain"
             icon={<Award className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />}
@@ -120,8 +120,8 @@ export default function StudentDashboardPage() {
           />
           <MetricCard
             title="Active Applications"
-            value={applications.length > 0 ? applications.length.toString() : "3"}
-            change={applications.length > 0 ? `${applications.length} submitted` : "1 Shortlisted"}
+            value={loading ? "..." : applications.length.toString()}
+            change={loading ? "Loading..." : `${applications.length} submitted`}
             trend="up"
             subtitle="Recruiter pipeline"
             icon={<Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />}

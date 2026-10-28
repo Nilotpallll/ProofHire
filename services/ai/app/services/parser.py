@@ -334,6 +334,7 @@ def parse_resume_document(content: bytes, filename: str) -> ParsedResumeResponse
         projects=projects,
         certifications=[],
         links=links,
+        rawText=clean_text[:50000],
         rawTextExcerpt=clean_text[:500],
         extractionConfidence=confidence,
         fileFormat=file_format,

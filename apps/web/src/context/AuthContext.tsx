@@ -171,12 +171,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const seedLogin = async (targetRole: Role) => {
+    setIsLoading(true);
+    try {
+      const res = await api.auth.seedLogin(targetRole);
+      if (res && res.accessToken) {
+        setUser(res.user as User);
+        setToken(res.accessToken);
+        localStorage.setItem("proofhire_user", JSON.stringify(res.user));
+        localStorage.setItem("proofhire_token", res.accessToken);
+        setIsLoading(false);
+        redirectBasedOnRole(targetRole);
+        return;
+      }
+    } catch (e) {
+      console.warn("API seed-login unavailable, using fallback:", e);
+    }
+
     const seed = SEED_USERS[targetRole];
     setUser(seed);
-    const fakeToken = `demo_token_${targetRole.toLowerCase()}`;
-    setToken(fakeToken);
+    const fallbackToken = `demo_token_${targetRole.toLowerCase()}`;
+    setToken(fallbackToken);
     localStorage.setItem("proofhire_user", JSON.stringify(seed));
-    localStorage.setItem("proofhire_token", fakeToken);
+    localStorage.setItem("proofhire_token", fallbackToken);
+    setIsLoading(false);
     redirectBasedOnRole(targetRole);
   };
 

@@ -163,19 +163,27 @@ export default function RecruiterDashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
             <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/60 p-3">
               <span className="text-xs text-slate-500 dark:text-slate-400 block">Applied</span>
-              <span className="text-xl font-bold text-slate-900 dark:text-slate-100">32</span>
+              <span className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                {applicants.filter((a) => a.status === "APPLIED").length}
+              </span>
             </div>
             <div className="rounded-xl border border-amber-200 dark:border-amber-800/80 bg-amber-50/50 dark:bg-amber-950/40 p-3">
               <span className="text-xs text-amber-700 dark:text-amber-300 block">Under Review</span>
-              <span className="text-xl font-bold text-amber-900 dark:text-amber-200">12</span>
+              <span className="text-xl font-bold text-amber-900 dark:text-amber-200">
+                {applicants.filter((a) => a.status === "UNDER_REVIEW").length}
+              </span>
             </div>
             <div className="rounded-xl border border-brand-200 dark:border-brand-800/80 bg-brand-50/50 dark:bg-brand-950/40 p-3">
               <span className="text-xs text-brand-700 dark:text-brand-300 block">Shortlisted</span>
-              <span className="text-xl font-bold text-brand-900 dark:text-brand-200">5</span>
+              <span className="text-xl font-bold text-brand-900 dark:text-brand-200">
+                {applicants.filter((a) => a.status === "SHORTLISTED").length}
+              </span>
             </div>
             <div className="rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/40 p-3">
               <span className="text-xs text-emerald-700 dark:text-emerald-300 block">Interview Stage</span>
-              <span className="text-xl font-bold text-emerald-900 dark:text-emerald-200">2</span>
+              <span className="text-xl font-bold text-emerald-900 dark:text-emerald-200">
+                {applicants.filter((a) => a.status === "INTERVIEW" || a.status === "SELECTED").length}
+              </span>
             </div>
           </div>
         </Card>

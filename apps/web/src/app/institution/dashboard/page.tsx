@@ -142,8 +142,8 @@ export default function InstitutionDashboardPage() {
           />
           <MetricCard
             title="Issued On-Chain Proofs"
-            value={credentials.length > 0 ? credentials.length.toString() : "1,420"}
-            change={credentials.length > 0 ? `${credentials.length} credentials in catalog` : "+120 this cohort"}
+            value={loading ? "..." : credentials.length.toString()}
+            change={loading ? "Loading..." : `${credentials.length} credentials in catalog`}
             trend="up"
             subtitle="Permanent credentials"
             icon={<Award className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />}

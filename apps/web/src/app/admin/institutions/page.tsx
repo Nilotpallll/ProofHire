@@ -69,6 +69,7 @@ const DEFAULT_INSTITUTIONS: InstitutionItem[] = [
 
 export default function AdminInstitutionsPage() {
   const [auditMessage, setAuditMessage] = React.useState<string | null>(null);
+  const [actionError, setActionError] = React.useState<string | null>(null);
   const [institutions, setInstitutions] = React.useState<InstitutionItem[]>(DEFAULT_INSTITUTIONS);
   const [pendingAction, setPendingAction] = React.useState<{
     type: "REJECT" | "SUSPEND" | "APPROVE";
@@ -105,6 +106,7 @@ export default function AdminInstitutionsPage() {
     if (!pendingAction) return;
     const { type, institution } = pendingAction;
     setIsProcessing(true);
+    setActionError(null);
 
     try {
       if (type === "APPROVE") {
@@ -135,13 +137,13 @@ export default function AdminInstitutionsPage() {
           }.`
         );
       }
-    } catch (e) {
-      console.warn("API action error:", e);
+      setTimeout(() => setAuditMessage(null), 5000);
+    } catch (e: any) {
+      setActionError(e?.message || `Failed to ${type.toLowerCase()} institution "${institution.name}".`);
     } finally {
       setIsProcessing(false);
       setPendingAction(null);
       setActionReason("");
-      setTimeout(() => setAuditMessage(null), 5000);
     }
   };
 
@@ -159,6 +161,21 @@ export default function AdminInstitutionsPage() {
           >
             <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             {auditMessage}
+          </div>
+        )}
+
+        {actionError && (
+          <div className="p-4 bg-rose-50 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-800 rounded-xl text-xs font-semibold text-rose-800 dark:text-rose-200 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
+              <span>{actionError}</span>
+            </div>
+            <button
+              onClick={() => setActionError(null)}
+              className="text-rose-600 hover:text-rose-800 font-bold"
+            >
+              Dismiss
+            </button>
           </div>
         )}
 

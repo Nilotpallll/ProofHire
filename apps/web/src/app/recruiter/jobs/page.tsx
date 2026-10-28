@@ -84,6 +84,8 @@ export default function RecruiterJobsPage() {
   const [jobToClose, setJobToClose] = React.useState<JobItem | null>(null);
   const [jobs, setJobs] = React.useState<JobItem[]>(DEFAULT_DEMO_JOBS);
   const [loading, setLoading] = React.useState(true);
+  const [actionError, setActionError] = React.useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = React.useState(false);
 
   React.useEffect(() => {
     async function loadJobs() {
@@ -118,30 +120,39 @@ export default function RecruiterJobsPage() {
   const toggleJobStatus = async (job: JobItem) => {
     if (job.status === "OPEN") {
       setJobToClose(job);
+      setActionError(null);
     } else {
       // Reopen
+      setIsUpdating(true);
+      setActionError(null);
       try {
         await api.jobs.publish(job.id);
-      } catch (e) {
-        console.warn("API publish failed, updating local state:", e);
+        setJobs((prev) =>
+          prev.map((j) => (j.id === job.id ? { ...j, status: "OPEN" } : j))
+        );
+      } catch (e: any) {
+        setActionError(e?.message || `Failed to reopen job '${job.title}'.`);
+      } finally {
+        setIsUpdating(false);
       }
-      setJobs((prev) =>
-        prev.map((j) => (j.id === job.id ? { ...j, status: "OPEN" } : j))
-      );
     }
   };
 
   const confirmCloseJob = async () => {
     if (jobToClose) {
+      setIsUpdating(true);
+      setActionError(null);
       try {
         await api.jobs.close(jobToClose.id);
-      } catch (e) {
-        console.warn("API close failed, updating local state:", e);
+        setJobs((prev) =>
+          prev.map((j) => (j.id === jobToClose.id ? { ...j, status: "CLOSED" } : j))
+        );
+        setJobToClose(null);
+      } catch (e: any) {
+        setActionError(e?.message || `Failed to close job '${jobToClose.title}'.`);
+      } finally {
+        setIsUpdating(false);
       }
-      setJobs((prev) =>
-        prev.map((j) => (j.id === jobToClose.id ? { ...j, status: "CLOSED" } : j))
-      );
-      setJobToClose(null);
     }
   };
 
@@ -164,6 +175,21 @@ export default function RecruiterJobsPage() {
       }
     >
       <div className="space-y-5">
+        {actionError && (
+          <div className="p-4 bg-rose-50 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-800 rounded-xl text-xs font-semibold text-rose-800 dark:text-rose-200 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
+              <span>{actionError}</span>
+            </div>
+            <button
+              onClick={() => setActionError(null)}
+              className="text-rose-600 hover:text-rose-800 font-bold"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {/* Filter controls */}
         <div className="flex items-center gap-2">
           {(["ALL", "OPEN", "CLOSED"] as const).map((tab) => (

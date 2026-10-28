@@ -85,7 +85,7 @@ export default function VerifyCredentialPage() {
           contractAddress: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
           network: "Ethereum Sepolia Testnet",
         });
-      } else {
+      } else if (id === "CRED-STANFORD-2025-001" || id === "cred-demo-stanford-cs-2025" || id.includes("STANFORD") || id.includes("MIT")) {
         setData({
           verificationStatus: "VERIFIED",
           isValid: true,
@@ -113,6 +113,15 @@ export default function VerifyCredentialPage() {
           blockchainConfirmed: true,
           contractAddress: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
           network: "Ethereum Sepolia Testnet (ChainID: 11155111)",
+        });
+      } else {
+        setData({
+          verificationStatus: "NOT_FOUND",
+          isValid: false,
+          blockchainConfirmed: true,
+          message: `Credential identifier '${id}' was not located on the blockchain registry contract.`,
+          contractAddress: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+          network: "Local Hardhat Network (ChainID: 31337)",
         });
       }
     } finally {
